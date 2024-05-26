@@ -1,5 +1,5 @@
 # Usar una imagen base oficial de Node.js
-FROM node:14
+FROM node
 
 # Establecer el directorio de trabajo dentro del contenedor
 WORKDIR /usr/src/app
@@ -17,4 +17,4 @@ COPY . .
 EXPOSE 3000
 
 # Definir el comando de inicio de la aplicación
-CMD ["node", "index.js"]
+CMD ["node", "main.js"]
