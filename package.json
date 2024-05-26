@@ -1,0 +1,17 @@
+{
+  "dependencies": {
+    "express": "^4.19.2"
+  },
+  "name": "inventario-express",
+  "version": "1.0.0",
+  "description": "inventario facilito",
+  "main": "main.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon main.js",
+    "start": "node main.js"
+  },
+  "author": "",
+  "license": "ISC"
+}
