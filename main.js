@@ -19,7 +19,7 @@ app.get("/", (req, res) => {
   res.send(`
   <h1>hola, este es el backend de inventario facilito</h1>
   <h2>estas son las rutas disponibles:</h2>
-  <h3>/Ejemplo_select: </h3>
+  <h3>get: /ejemplo_select: </h3>
   `);
 });
 
@@ -34,8 +34,6 @@ app.get('/ejemplo_select', (req, res) => {
     res.json(results);
   });
 });
-
-
 
 
 // ------------- Print del puerto -------------
