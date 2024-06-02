@@ -6,9 +6,9 @@ const port = 3000;
 // ------------- Conexion a la base de datos -------------
 const pool = mysql.createPool({
   host: 'db',
-  user: 'root',
-  password: 'example',
-  database: 'ejemplo',
+  user: 'alfajor',
+  password: 'alfajor',
+  database: 'inventario',
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0
