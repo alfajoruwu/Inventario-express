@@ -21,7 +21,7 @@ CREATE TABLE `Producto` (
   `Nombre` varchar(255),
   `Descripcion` text,
   `Imagen` varchar(255),
-  `Precio` decimal,
+  `Precio` decimal(10, 2),
   `Codigo` varchar(255)
 );
 
@@ -44,6 +44,13 @@ CREATE TABLE `Tag` (
   `Nombre` varchar(255)
 );
 
+CREATE TABLE `Usuario` (
+  `ID` int PRIMARY KEY,
+  `Nombre` varchar(255),
+  `Contraseña` varchar(255),
+  `Codigo_Administrador` varchar(255)
+);
+
 CREATE TABLE `Compra` (
   `ID` int PRIMARY KEY,
   `Fecha` date,
@@ -54,13 +61,6 @@ CREATE TABLE `Compra` (
   FOREIGN KEY (`Cliente_ID`) REFERENCES `Cliente` (`ID`),
   FOREIGN KEY (`Usuario_ID`) REFERENCES `Usuario` (`ID`),
   FOREIGN KEY (`Lote_ID`) REFERENCES `Lote` (`ID`)
-);
-
-CREATE TABLE `Usuario` (
-  `ID` int PRIMARY KEY,
-  `Nombre` varchar(255),
-  `Contraseña` varchar(255),
-  `Codigo_Administrador` varchar(255)
 );
 
 CREATE TABLE `Categoriza` (
@@ -91,5 +91,3 @@ CREATE TABLE `Administra` (
 -- Create indexes
 CREATE UNIQUE INDEX `Categoriza_index_0` ON `Categoriza` (`Bodega_ID`, `Tag_ID`);
 CREATE UNIQUE INDEX `Administra_index_1` ON `Administra` (`Usuario_ID`, `Bodega_ID`);
-
--- Foreign keys already added in table creation

@@ -25,7 +25,7 @@ app.get("/", (req, res) => {
 
 // ------------- Rutas de ejemplo -------------
 app.get('/ejemplo_select', (req, res) => {
-  pool.query('SELECT * FROM uwu', (error, results) => {
+  pool.query('SELECT * FROM Usuario', (error, results) => {
     if (error) {
       console.error('Error al ejecutar la consulta:', error.stack);
       res.status(500).send('Error al obtener datos');
