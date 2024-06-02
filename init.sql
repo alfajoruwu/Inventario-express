@@ -1,8 +1,15 @@
+-- Create the database
+CREATE DATABASE inventario;
+
+-- Use the created database
+USE inventario;
+
+-- Create the user and grant privileges
 CREATE USER 'alfajor'@'%' IDENTIFIED BY 'alfajor';
 GRANT ALL PRIVILEGES ON *.* TO 'alfajor'@'%' WITH GRANT OPTION;
 FLUSH PRIVILEGES;
 
-
+-- Create the tables
 CREATE TABLE `Bodega` (
   `ID` int PRIMARY KEY,
   `Nombre` varchar(255),
@@ -23,7 +30,8 @@ CREATE TABLE `Lote` (
   `Cantidad` int,
   `Fecha_Vencimiento` date,
   `Fecha_de_llegada` date,
-  `Producto_ID` int
+  `Producto_ID` int,
+  FOREIGN KEY (`Producto_ID`) REFERENCES `Producto` (`ID`)
 );
 
 CREATE TABLE `Cliente` (
@@ -42,7 +50,10 @@ CREATE TABLE `Compra` (
   `Cliente_ID` int,
   `Cantidad` int,
   `Usuario_ID` int,
-  `Lote_ID` int
+  `Lote_ID` int,
+  FOREIGN KEY (`Cliente_ID`) REFERENCES `Cliente` (`ID`),
+  FOREIGN KEY (`Usuario_ID`) REFERENCES `Usuario` (`ID`),
+  FOREIGN KEY (`Lote_ID`) REFERENCES `Lote` (`ID`)
 );
 
 CREATE TABLE `Usuario` (
@@ -54,41 +65,31 @@ CREATE TABLE `Usuario` (
 
 CREATE TABLE `Categoriza` (
   `Bodega_ID` int,
-  `Tag_ID` int
+  `Tag_ID` int,
+  UNIQUE (`Bodega_ID`, `Tag_ID`),
+  FOREIGN KEY (`Bodega_ID`) REFERENCES `Bodega` (`ID`),
+  FOREIGN KEY (`Tag_ID`) REFERENCES `Tag` (`ID`)
 );
 
 CREATE TABLE `Almacena` (
   `ID` int PRIMARY KEY,
   `Bodega_ID` int,
-  `Lote_ID` int
+  `Lote_ID` int,
+  FOREIGN KEY (`Bodega_ID`) REFERENCES `Bodega` (`ID`),
+  FOREIGN KEY (`Lote_ID`) REFERENCES `Lote` (`ID`)
 );
 
 CREATE TABLE `Administra` (
   `Usuario_ID` int,
   `Bodega_ID` int,
-  `Tipo` varchar(255)
+  `Tipo` varchar(255),
+  UNIQUE (`Usuario_ID`, `Bodega_ID`),
+  FOREIGN KEY (`Usuario_ID`) REFERENCES `Usuario` (`ID`),
+  FOREIGN KEY (`Bodega_ID`) REFERENCES `Bodega` (`ID`)
 );
 
+-- Create indexes
 CREATE UNIQUE INDEX `Categoriza_index_0` ON `Categoriza` (`Bodega_ID`, `Tag_ID`);
-
 CREATE UNIQUE INDEX `Administra_index_1` ON `Administra` (`Usuario_ID`, `Bodega_ID`);
 
-ALTER TABLE `Lote` ADD FOREIGN KEY (`Producto_ID`) REFERENCES `Producto` (`ID`);
-
-ALTER TABLE `Compra` ADD FOREIGN KEY (`Cliente_ID`) REFERENCES `Cliente` (`ID`);
-
-ALTER TABLE `Compra` ADD FOREIGN KEY (`Usuario_ID`) REFERENCES `Usuario` (`ID`);
-
-ALTER TABLE `Compra` ADD FOREIGN KEY (`Lote_ID`) REFERENCES `Lote` (`ID`);
-
-ALTER TABLE `Almacena` ADD FOREIGN KEY (`Bodega_ID`) REFERENCES `Bodega` (`ID`);
-
-ALTER TABLE `Almacena` ADD FOREIGN KEY (`Lote_ID`) REFERENCES `Lote` (`ID`);
-
-ALTER TABLE `Categoriza` ADD FOREIGN KEY (`Bodega_ID`) REFERENCES `Bodega` (`ID`);
-
-ALTER TABLE `Categoriza` ADD FOREIGN KEY (`Tag_ID`) REFERENCES `Tag` (`ID`);
-
-ALTER TABLE `Administra` ADD FOREIGN KEY (`Usuario_ID`) REFERENCES `Usuario` (`ID`);
-
-ALTER TABLE `Administra` ADD FOREIGN KEY (`Bodega_ID`) REFERENCES `Bodega` (`ID`);
+-- Foreign keys already added in table creation
