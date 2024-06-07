@@ -11,78 +11,79 @@ FLUSH PRIVILEGES;
 
 -- Create the tables
 CREATE TABLE `Bodega` (
-  `ID` int PRIMARY KEY,
-  `Nombre` varchar(255),
-  `Codigo_Invitacion` varchar(255)
+  `ID` INT AUTO_INCREMENT PRIMARY KEY,
+  `Nombre` VARCHAR(255),
+  `Codigo_Invitacion` VARCHAR(255)
 );
 
 CREATE TABLE `Producto` (
-  `ID` int PRIMARY KEY,
-  `Nombre` varchar(255),
-  `Descripcion` text,
-  `Imagen` varchar(255),
-  `Precio` decimal(10, 2),
-  `Codigo` varchar(255)
+  `ID` INT AUTO_INCREMENT PRIMARY KEY,
+  `Nombre` VARCHAR(255),
+  `Descripcion` TEXT,
+  `Imagen` VARCHAR(255),
+  `Precio` DECIMAL(10, 2),
+  `Codigo` VARCHAR(255)
 );
 
 CREATE TABLE `Lote` (
-  `ID` int PRIMARY KEY,
-  `Cantidad` int,
-  `Fecha_Vencimiento` date,
-  `Fecha_de_llegada` date,
-  `Producto_ID` int,
+  `ID` INT AUTO_INCREMENT PRIMARY KEY,
+  `Cantidad` INT,
+  `Fecha_Vencimiento` DATE,
+  `Fecha_de_llegada` DATE,
+  `Producto_ID` INT,
   FOREIGN KEY (`Producto_ID`) REFERENCES `Producto` (`ID`)
 );
 
 CREATE TABLE `Cliente` (
-  `ID` int PRIMARY KEY,
-  `Nombre` varchar(255)
+  `ID` INT AUTO_INCREMENT PRIMARY KEY,
+  `Nombre` VARCHAR(255)
 );
 
 CREATE TABLE `Tag` (
-  `ID` int PRIMARY KEY,
-  `Nombre` varchar(255)
+  `ID` INT AUTO_INCREMENT PRIMARY KEY,
+  `Nombre` VARCHAR(255)
 );
 
 CREATE TABLE `Usuario` (
-  `ID` int PRIMARY KEY,
-  `Nombre` varchar(255),
-  `Contraseña` varchar(255),
-  `Codigo_Administrador` varchar(255)
+  `ID` INT AUTO_INCREMENT PRIMARY KEY,
+  `Nombre` VARCHAR(255),
+  `Contraseña` VARCHAR(255),
+  `Correo` VARCHAR(255),
+  `Codigo_Administrador` VARCHAR(255)
 );
 
 CREATE TABLE `Compra` (
-  `ID` int PRIMARY KEY,
-  `Fecha` date,
-  `Cliente_ID` int,
-  `Cantidad` int,
-  `Usuario_ID` int,
-  `Lote_ID` int,
+  `ID` INT AUTO_INCREMENT PRIMARY KEY,
+  `Fecha` DATE,
+  `Cliente_ID` INT,
+  `Cantidad` INT,
+  `Usuario_ID` INT,
+  `Lote_ID` INT,
   FOREIGN KEY (`Cliente_ID`) REFERENCES `Cliente` (`ID`),
   FOREIGN KEY (`Usuario_ID`) REFERENCES `Usuario` (`ID`),
   FOREIGN KEY (`Lote_ID`) REFERENCES `Lote` (`ID`)
 );
 
 CREATE TABLE `Categoriza` (
-  `Bodega_ID` int,
-  `Tag_ID` int,
+  `Bodega_ID` INT,
+  `Tag_ID` INT,
   UNIQUE (`Bodega_ID`, `Tag_ID`),
   FOREIGN KEY (`Bodega_ID`) REFERENCES `Bodega` (`ID`),
   FOREIGN KEY (`Tag_ID`) REFERENCES `Tag` (`ID`)
 );
 
 CREATE TABLE `Almacena` (
-  `ID` int PRIMARY KEY,
-  `Bodega_ID` int,
-  `Lote_ID` int,
+  `ID` INT AUTO_INCREMENT PRIMARY KEY,
+  `Bodega_ID` INT,
+  `Lote_ID` INT,
   FOREIGN KEY (`Bodega_ID`) REFERENCES `Bodega` (`ID`),
   FOREIGN KEY (`Lote_ID`) REFERENCES `Lote` (`ID`)
 );
 
 CREATE TABLE `Administra` (
-  `Usuario_ID` int,
-  `Bodega_ID` int,
-  `Tipo` varchar(255),
+  `Usuario_ID` INT,
+  `Bodega_ID` INT,
+  `Tipo` VARCHAR(255),
   UNIQUE (`Usuario_ID`, `Bodega_ID`),
   FOREIGN KEY (`Usuario_ID`) REFERENCES `Usuario` (`ID`),
   FOREIGN KEY (`Bodega_ID`) REFERENCES `Bodega` (`ID`)
