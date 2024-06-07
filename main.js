@@ -3,6 +3,13 @@ const mysql = require('mysql2');
 const app = express();
 const port = 3000;
 app.use(express.json()); 
+const cors = require('cors');
+
+// ------------- cors ----------------------
+
+app.use(cors()); // Habilita CORS para todas las rutas
+app.use(express.json()); 
+
 
 // ------------- Conexion a la base de datos -------------
 const pool = mysql.createPool({
@@ -176,8 +183,6 @@ app.get("/", (req, res) => {
 });
 
 
-
-
 // ------------ Rutas por vistas ------------
 
 //    --------- login  ----------------------
@@ -238,14 +243,30 @@ app.get('/obtener_bodegas', (req, res) => {
 
   app.post('/crear_bodega', (req, res) => {
     const { Nombre, Usuario_ID } = req.body;
+    
     const sql = 'INSERT INTO Bodega (Nombre) VALUES (?);';
     pool.query(sql, [Nombre], (error, results) => {
+      
       if (error) {
         console.error('Error al ejecutar la consulta:', error.stack);
         res.status(500).send('Error al crear bodega');
         return;
       }
+
+      const bodegaId = results.insertId;
+      const sqlInsertAdministra = 'INSERT INTO Administra (Usuario_ID, Bodega_ID, Tipo) VALUES (?, ?, ?);';
+      console.log(bodegaId);  
+      pool.query(sqlInsertAdministra, [Usuario_ID, bodegaId, 'Propietario'], (error, results) => {
+        if (error) {
+          console.error('Error al ejecutar la consulta:', error.stack);
+          res.status(500).send('Error al crear bodega');
+          return;
+        }
+      });
+
       res.status(201).send('Bodega creada exitosamente');
+      
+    
     });
   });
 
