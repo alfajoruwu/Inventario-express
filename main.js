@@ -187,7 +187,7 @@ app.get("/", (req, res) => {
 
 //    --------- login  ----------------------
 
-app.get('/login', (req, res) => {
+app.post('/login', (req, res) => {
   const { Nombre, Contraseña } = req.body;
   // Usar ? como marcador de posición para los valores de la consulta
   const sql = 'SELECT Nombre, Contraseña FROM Usuario WHERE Nombre = ? and Contraseña = ?';
