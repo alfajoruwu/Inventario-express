@@ -188,12 +188,12 @@ app.get("/", (req, res) => {
 //    --------- login  ----------------------
 
 app.post('/login', (req, res) => {
-  const { Nombre, Contraseña } = req.body;
+  const {Correo, Contraseña } = req.body;
   // Usar ? como marcador de posición para los valores de la consulta
-  const sql = 'SELECT Nombre, Contraseña FROM Usuario WHERE Nombre = ? and Contraseña = ?';
+  const sql = 'SELECT Nombre, Contraseña FROM Usuario WHERE Correo = ? and Contraseña = ?';
   console.log(req.body);
   
-  pool.query(sql, [ Nombre,Contraseña], (error, results) => {
+  pool.query(sql, [Correo,Contraseña], (error, results) => {
     if (error) {
       console.error('Error al ejecutar la consulta:', error.stack);
       res.status(500).send('Error al obtener datos');
