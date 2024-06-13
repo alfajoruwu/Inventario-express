@@ -2,14 +2,12 @@ const express = require("express");
 const mysql = require('mysql2');
 const app = express();
 const port = 3000;
-app.use(express.json()); 
+app.use(express.json());
 const cors = require('cors');
 
 // ------------- cors ----------------------
-
 app.use(cors()); // Habilita CORS para todas las rutas
-app.use(express.json()); 
-
+app.use(express.json());
 
 // ------------- Conexion a la base de datos -------------
 const pool = mysql.createPool({
@@ -36,15 +34,15 @@ app.get("/", (req, res) => {
     <!-- Metodos de la vista -->
   
     <input type="checkbox" id="collapse-toggle2">
-    <label for="collapse-toggle2" class="collapse-btn botonget">/login {metodo: get}</label>
+    <label for="collapse-toggle2" class="collapse-btn botonpost">/login {metodo: post}</label>
     <div id="collapse-content2" class="collapse-content">
       <h3>Ruta</h3>
       <p>/login</p>
-      <p>Metodo: GET</p>
+      <p>Metodo: POST</p>
       <h3>Descripcion</h3>
       <p>Ruta para hacer login</p>
       <h3>Parametros</h3>
-      <p>{ Nombre: "String", Contraseña: "String"}</p>
+      <p>{ Correo: "String", Contraseña: "String"}</p>
       <h3>Respuesta</h3>
       <p> {error 401}(no encontro usuarios): Usuario o contraseña incorrectos</p>
       <p> {respuesta ok}:{"Nombre": "String","Contraseña": "String"} </p>
@@ -182,18 +180,15 @@ app.get("/", (req, res) => {
   </style>`);
 });
 
-
 // ------------ Rutas por vistas ------------
 
-//    --------- login  ----------------------
-
+// --------- login ----------------------
 app.post('/login', (req, res) => {
-  const {Correo, Contraseña } = req.body;
-  // Usar ? como marcador de posición para los valores de la consulta
+  const { Correo, Contraseña } = req.body;
   const sql = 'SELECT Nombre, Contraseña FROM Usuario WHERE Correo = ? and Contraseña = ?';
   console.log(req.body);
   
-  pool.query(sql, [Correo,Contraseña], (error, results) => {
+  pool.query(sql, [Correo, Contraseña], (error, results) => {
     if (error) {
       console.error('Error al ejecutar la consulta:', error.stack);
       res.status(500).send('Error al obtener datos');
@@ -209,8 +204,7 @@ app.post('/login', (req, res) => {
   });
 });
 
-//    --------- Crear usuario ---------------
-
+// --------- Crear usuario ---------------
 app.post('/crear_usuario', (req, res) => {
   const { Nombre, Correo, Contraseña } = req.body;
   const sql = 'INSERT INTO Usuario (Nombre, Correo, Contraseña) VALUES (?, ?, ?)';
@@ -224,12 +218,11 @@ app.post('/crear_usuario', (req, res) => {
   });
 });
 
-//    --------- Vista bodegas ------------
-
-app.get('/obtener_bodegas', (req, res) => {
-  const { Usuario_ID } = req.body;
-  const sql = 'SELECT B.*  FROM Bodega B JOIN Administra A ON B.ID = A.Bodega_ID WHERE A.Usuario_ID = ?; ';
-  pool.query(sql,[Usuario_ID], (error, results) => {
+// --------- Vista bodegas ------------
+app.get('/obtener_bodegas/:Usuario_ID', (req, res) => {
+  const { Usuario_ID } = req.params;
+  const sql = 'SELECT B.* FROM Bodega B JOIN Administra A ON B.ID = A.Bodega_ID WHERE A.Usuario_ID = ?';
+  pool.query(sql, [Usuario_ID], (error, results) => {
     if (error) {
       console.error('Error al ejecutar la consulta:', error.stack);
       res.status(500).send('Error al obtener datos');
@@ -237,40 +230,148 @@ app.get('/obtener_bodegas', (req, res) => {
     }
     res.json(results);
   });
-  });
+});
+// -------------- Vista Crear Bodegas --------------
+app.post('/crear_bodega', (req, res) => {
+  const { Nombre, Usuario_ID ,Tipo } = req.body;
+  
+  const sql = 'INSERT INTO Bodega (Nombre) VALUES (?);';
+  pool.query(sql, [Nombre], (error, results) => {
 
-  // -------------- Vista Crear Bodegas --------------
+    if (error) {
+      console.error('Error al ejecutar la consulta:', error.stack);
+      res.status(500).send('Error al crear bodega');
+      return;
+    }
 
-  app.post('/crear_bodega', (req, res) => {
-    const { Nombre, Usuario_ID } = req.body;
-    
-    const sql = 'INSERT INTO Bodega (Nombre) VALUES (?);';
-    pool.query(sql, [Nombre], (error, results) => {
-      
+    const bodegaId = results.insertId;
+    const sqlInsertAdministra = 'INSERT INTO Administra (Usuario_ID, Bodega_ID, Tipo) VALUES (?, ?, ?);';
+    console.log(bodegaId);  
+    pool.query(sqlInsertAdministra, [Usuario_ID, bodegaId, Tipo], (error, results) => {
       if (error) {
         console.error('Error al ejecutar la consulta:', error.stack);
         res.status(500).send('Error al crear bodega');
         return;
       }
+    });
 
-      const bodegaId = results.insertId;
-      const sqlInsertAdministra = 'INSERT INTO Administra (Usuario_ID, Bodega_ID, Tipo) VALUES (?, ?, ?);';
-      console.log(bodegaId);  
-      pool.query(sqlInsertAdministra, [Usuario_ID, bodegaId, 'Propietario'], (error, results) => {
+    res.status(201).send('Bodega creada exitosamente');
+  });
+});
+
+app.post('/crear_tag', (req, res) => {
+  const { Nombre } = req.body;
+  const sql = 'INSERT INTO Tag (Nombre) VALUES (?);';
+  pool.query(sql, [Nombre], (error, results) => {
+    if (error) {
+      console.error('Error al ejecutar la consulta:', error.stack);
+      res.status(500).send('Error al crear tag');
+      return;
+    }
+    res.status(201).send('Tag creado exitosamente');
+  });
+});
+
+app.get('/obtener_tags', (req, res) => {
+  const sql = 'SELECT * FROM Tag';
+  pool.query(sql, (error,results) => {
+    if (error) {
+      console.error('Error al ejecutar la consulta:', error.stack);
+      res.status(500).send('Error al obtener datos');
+      return;
+    }
+    res.json(results);
+  });
+});
+
+
+app.post('/crear_bodega_tags', (req, res) => {
+  const { Nombre, Usuario_ID, Tipo, Tags } = req.body;
+
+  const sql = 'INSERT INTO Bodega (Nombre) VALUES (?);';
+  pool.query(sql, [Nombre], (error, results) => {
+    if (error) {
+      console.error('Error al ejecutar la consulta:', error.stack);
+      res.status(500).send('Error al crear bodega');
+      return;
+    }
+
+    const bodegaId = results.insertId;
+    const sqlInsertAdministra = 'INSERT INTO Administra (Usuario_ID, Bodega_ID, Tipo) VALUES (?, ?, ?);';
+    console.log(bodegaId);
+    pool.query(sqlInsertAdministra, [Usuario_ID, bodegaId, Tipo], (error, results) => {
+      if (error) {
+        console.error('Error al ejecutar la consulta:', error.stack);
+        res.status(500).send('Error al crear bodega');
+        return;
+      }
+    });
+
+    // Verificar si hay etiquetas y agregarlas a la tabla Categoriza si es necesario
+    if (Tags && Tags.length > 0) {
+      const tagValues = Tags.map(tag => [bodegaId, tag]);
+      const sqlInsertTags = 'INSERT INTO Categoriza (Bodega_ID, Tag_ID) VALUES ?;';
+      pool.query(sqlInsertTags, [tagValues], (error, results) => {
         if (error) {
-          console.error('Error al ejecutar la consulta:', error.stack);
+          console.error('Error al ejecutar la consulta para añadir etiquetas:', error.stack);
           res.status(500).send('Error al crear bodega');
           return;
         }
       });
+    }
 
-      res.status(201).send('Bodega creada exitosamente');
-      
-    
-    });
+    res.status(201).send('Bodega creada exitosamente');
   });
+});
+
+app.get('/obtener_bodega_por_tag_y_usuario/:Usuario_ID/:Tag_ID', (req, res) => {
+  const { Usuario_ID, Tag_ID } = req.params;
+  const sql = 'SELECT B.* FROM Bodega B JOIN Categoriza C ON B.ID = C.Bodega_ID WHERE C.Tag_ID = ? AND B.ID IN (SELECT Bodega_ID FROM Administra WHERE Usuario_ID = ?)';
+  pool.query(sql, [Tag_ID, Usuario_ID], (error, results) => {
+    if (error) {
+      console.error('Error al ejecutar la consulta:', error.stack);
+      res.status(500).send('Error al obtener datos');
+      return;
+    }
+    res.json(results);
+  });
+});
 
 
+
+
+
+// -------------- Vista Crear Producto --------------
+
+app.post('/crear_producto', (req, res) => {
+  const { Nombre, Descripcion, Precio, Imagen,Codigo } = req.body;
+  const sql = 'INSERT INTO Producto (Nombre, Descripcion, Precio, Imagen,Codigo) VALUES (?, ?, ?, ?, ?);';
+  pool.query(sql, [Nombre, Descripcion, Precio, Imagen,Codigo], (error, results) => {
+    if (error) {
+      console.error('Error al ejecutar la consulta:', error.stack);
+      res.status(500).send('Error al crear producto');
+      return;
+    }
+    res.status(201).send('Producto creado exitosamente');
+  });
+}
+);
+
+// -------------- Vista Ver Productos --------------
+
+app.get('/obtener_productos', (req, res) => {
+  const sql = 'SELECT * FROM Producto';
+  pool.query(sql, (error, results) => {
+    if (error) {
+      console.error('Error al ejecutar la consulta:', error.stack);
+      res.status(500).send('Error al obtener datos');
+      return;
+    }
+    res.json(results);
+  }
+  );
+}
+);
 
 
 // ------------- Print del puerto -------------
