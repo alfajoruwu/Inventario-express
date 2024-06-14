@@ -12,9 +12,9 @@ app.use(express.json());
 // ------------- Conexion a la base de datos -------------
 const pool = mysql.createPool({
   host: 'db',
-  user: 'Backend',
-  password: 'Backend',
-  database: 'Ejemplo',
+  user: 'alfajor',
+  password: 'alfajor',
+  database: 'inventario',
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0
@@ -80,7 +80,7 @@ app.get("/", (req, res) => {
 
   <!-- Vista login -->
   <input type="checkbox" id="collapse-toggle1">
-  <label for="collapse-toggle1" class="collapse-btn boton"> Vista ejemplo</label>
+  <label for="collapse-toggle1" class="collapse-btn boton"> Vista login</label>
   <div id="collapse-content1" class="collapse-content">
     <!-- Metodos de la vista -->
     <input type="checkbox" id="collapse-toggle2">
@@ -328,7 +328,7 @@ app.post('/crear_usuario', (req, res) => {
       res.status(500).send('Error al crear usuario');
       return;
     }
-    res.status(201).send('Ejemplo creado exitosamente');
+    res.status(201).send('Usuario creado exitosamente');
   });
 });
 
