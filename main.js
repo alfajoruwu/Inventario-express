@@ -22,17 +22,67 @@ const pool = mysql.createPool({
 
 // ------------- Inicial -------------
 app.get("/", (req, res) => {
-  res.send(`<h1>¡Hola, este es el backend de Inventario Facilito!</h1>
+  res.send(`
+  <title>Documentación del Backend de Inventario Facilito</title>
+  <style>
+    .boton {
+      background-color: #ffac33;
+      border: none;
+      color: white;
+      padding: 15px 32px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 16px;
+      margin: 4px 2px;
+      cursor: pointer;
+    }
+
+    .botonget {
+      background-color: #4CAF50;
+      border: none;
+      color: white;
+      padding: 15px 32px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 16px;
+      margin: 4px 2px;
+      cursor: pointer;
+    }
+
+    .botonpost {
+      background-color: #008CBA;
+      border: none;
+      color: white;
+      padding: 15px 32px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 16px;
+      margin: 4px 2px;
+      cursor: pointer;
+    }
+    
+    .collapse-content {
+      display: none;
+      margin-left: 20px; /* Indentación para los colapsables anidados */
+    }
+
+    input[type="checkbox"]:checked + .collapse-btn + .collapse-content {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <h1>¡Hola, este es el backend de Inventario Facilito!</h1>
   <p> Aquí están las rutas separadas por vistas </p>
-  
+
   <!-- Vista login -->
-  
   <input type="checkbox" id="collapse-toggle1">
   <label for="collapse-toggle1" class="collapse-btn boton"> Vista login</label>
   <div id="collapse-content1" class="collapse-content">
-    
     <!-- Metodos de la vista -->
-  
     <input type="checkbox" id="collapse-toggle2">
     <label for="collapse-toggle2" class="collapse-btn botonpost">/login {metodo: post}</label>
     <div id="collapse-content2" class="collapse-content">
@@ -49,15 +99,12 @@ app.get("/", (req, res) => {
     </div>
   </div>
   <br/>
-  
+
   <!-- Vista Crear usuarios -->
-  
   <input type="checkbox" id="collapse-toggle3">
   <label for="collapse-toggle3" class="collapse-btn boton"> Vista Crear usuarios</label>
   <div id="collapse-content3" class="collapse-content">
-    
     <!-- Metodos de la vista -->
-  
     <input type="checkbox" id="collapse-toggle4">
     <label for="collapse-toggle4" class="collapse-btn botonpost">/crear_usuario {metodo: post}</label>
     <div id="collapse-content4" class="collapse-content">
@@ -76,19 +123,15 @@ app.get("/", (req, res) => {
   <br/>
 
   <!-- Vista bodegas -->
-
   <input type="checkbox" id="collapse-toggle5">
   <label for="collapse-toggle5" class="collapse-btn boton"> Vista bodegas</label>
   <div id="collapse-content5" class="collapse-content">
-
     <!-- Metodos de la vista -->
-
     <input type="checkbox" id="collapse-toggle6">
     <label for="collapse-toggle6" class="collapse-btn botonget">/obtener_bodegas {metodo: get}</label>
     <div id="collapse-content6" class="collapse-content">
-
       <h3>Ruta</h3>
-      <p>/obtener_bodegas</p>
+      <p>/obtener_bodegas/:Usuario_ID</p>
       <p>Metodo: GET</p>
       <h3>Descripcion</h3>
       <p>Ruta para obtener las bodegas de un usuario</p>
@@ -102,82 +145,153 @@ app.get("/", (req, res) => {
   <br/>
 
   <!-- Vista Crear Bodegas -->
-
   <input type="checkbox" id="collapse-toggle7">
   <label for="collapse-toggle7" class="collapse-btn boton"> Vista Crear Bodegas</label>
-
   <div id="collapse-content7" class="collapse-content">
-
     <!-- Metodos de la vista -->
-
     <input type="checkbox" id="collapse-toggle8">
     <label for="collapse-toggle8" class="collapse-btn botonpost">/crear_bodega {metodo: post}</label>
-
     <div id="collapse-content8" class="collapse-content">
-
       <h3>Ruta</h3>
       <p>/crear_bodega</p>
       <p>Metodo: POST</p>
       <h3>Descripcion</h3>
       <p>Ruta para crear una bodega</p>
       <h3>Parametros</h3>
-      <p>{ Nombre: "String", Usuario_ID: "Number"}</p>
+      <p>{ Nombre: "String", Usuario_ID: "Number", Tipo: "String"}</p>
       <h3>Respuesta</h3>
       <p> {error 500}(error al crear bodega): Error al crear bodega</p>
       <p> {respuesta ok}: Bodega creada exitosamente </p>
     </div>
   </div>
   <br/>
+
+  <!-- Vista Tags -->
+  <input type="checkbox" id="collapse-toggle9">
+  <label for="collapse-toggle9" class="collapse-btn boton"> Vista Tags</label>
+  <div id="collapse-content9" class="collapse-content">
+    <!-- Metodos de la vista -->
+    <input type="checkbox" id="collapse-toggle10">
+    <label for="collapse-toggle10" class="collapse-btn botonpost">/crear_tag {metodo: post}</label>
+    <div id="collapse-content10" class="collapse-content">
+      <h3>Ruta</h3>
+      <p>/crear_tag</p>
+      <p>Metodo: POST</p>
+      <h3>Descripcion</h3>
+      <p>Ruta para crear un tag</p>
+      <h3>Parametros</h3>
+      <p>{ Nombre: "String"}</p>
+      <h3>Respuesta</h3>
+      <p> {error 500}(error al crear tag): Error al crear tag</p>
+      <p> {respuesta ok}: Tag creado exitosamente </p>
+    </div>
+    <input type="checkbox" id="collapse-toggle11">
+    <label for="collapse-toggle11" class="collapse-btn botonget">/obtener_tags {metodo: get}</label>
+    <div id="collapse-content11" class="collapse-content">
+      <h3>Ruta</h3>
+      <p>/obtener_tags</p>
+      <p>Metodo: GET</p>
+      <h3>Descripcion</h3>
+      <p>Ruta para obtener todos los tags</p>
+      <h3>Parametros</h3>
+      <p>Sin parámetros</p>
+      <h3>Respuesta</h3>
+      <p> {error 500}(error al obtener datos): Error al obtener datos</p>
+      <p> {respuesta ok}: [{"ID": "Number","Nombre": "String"}] </p>
+    </div>
+  </div>
+  <br/>
+
+  <!-- Vista Crear Bodega con Tags -->
+  <input type="checkbox" id="collapse-toggle12">
+  <label for="collapse-toggle12" class="collapse-btn boton"> Vista Crear Bodega con Tags</label>
+  <div id="collapse-content12" class="collapse-content">
+    <!-- Metodos de la vista -->
+    <input type="checkbox" id="collapse-toggle13">
+    <label for="collapse-toggle13" class="collapse-btn botonpost">/crear_bodega_tags {metodo: post}</label>
+    <div id="collapse-content13" class="collapse-content">
+      <h3>Ruta</h3>
+      <p>/crear_bodega_tags</p>
+      <p>Metodo: POST</p>
+      <h3>Descripcion</h3>
+      <p>Ruta para crear una bodega con tags</p>
+      <h3>Parametros</h3>
+      <p>{ Nombre: "String", Usuario_ID: "Number", Tipo: "String", Tags: ["Number"]}</p>
+      <h3>Respuesta</h3>
+      <p> {error 500}(error al crear bodega): Error al crear bodega</p>
+      <p> {respuesta ok}: Bodega creada exitosamente </p>
+    </div>
+  </div>
+  <br/>
+
+  <!-- Vista Obtener Bodegas por Tag y Usuario -->
+  <input type="checkbox" id="collapse-toggle14">
+  <label for="collapse-toggle14" class="collapse-btn boton"> Vista Obtener Bodegas por Tag y Usuario</label>
+  <div id="collapse-content14" class="collapse-content">
+    <!-- Metodos de la vista -->
+    <input type="checkbox" id="collapse-toggle15">
+    <label for="collapse-toggle15" class="collapse-btn botonget">/obtener_bodega_por_tag_y_usuario {metodo: get}</label>
+    <div id="collapse-content15" class="collapse-content">
+      <h3>Ruta</h3>
+      <p>/obtener_bodega_por_tag_y_usuario/:Usuario_ID/:Tag_ID</p>
+      <p>Metodo: GET</p>
+      <h3>Descripcion</h3>
+      <p>Ruta para obtener las bodegas por tag y usuario</p>
+      <h3>Parametros</h3>
+      <p>{ Usuario_ID: "Number", Tag_ID: "Number"}</p>
+      <h3>Respuesta</h3>
+      <p> {error 500}(error al obtener datos): Error al obtener datos</p>
+      <p> {respuesta ok}: [{"ID": "Number","Nombre": "String"}] </p>
+    </div>
+  </div>
+  <br/>
+
+  <!-- Vista Crear Producto -->
+  <input type="checkbox" id="collapse-toggle16">
+  <label for="collapse-toggle16" class="collapse-btn boton"> Vista Crear Producto</label>
+  <div id="collapse-content16" class="collapse-content">
+    <!-- Metodos de la vista -->
+    <input type="checkbox" id="collapse-toggle17">
+    <label for="collapse-toggle17" class="collapse-btn botonpost">/crear_producto {metodo: post}</label>
+    <div id="collapse-content17" class="collapse-content">
+      <h3>Ruta</h3>
+      <p>/crear_producto</p>
+      <p>Metodo: POST</p>
+      <h3>Descripcion</h3>
+      <p>Ruta para crear un producto</p>
+      <h3>Parametros</h3>
+      <p>{ Nombre: "String", Descripcion: "String", Precio: "Number", Imagen: "String", Codigo: "String"}</p>
+      <h3>Respuesta</h3>
+      <p> {error 500}(error al crear producto): Error al crear producto</p>
+      <p> {respuesta ok}: Producto creado exitosamente </p>
+    </div>
+  </div>
+  <br/>
+
+  <!-- Vista Ver Productos -->
+  <input type="checkbox" id="collapse-toggle18">
+  <label for="collapse-toggle18" class="collapse-btn boton"> Vista Ver Productos</label>
+  <div id="collapse-content18" class="collapse-content">
+    <!-- Metodos de la vista -->
+    <input type="checkbox" id="collapse-toggle19">
+    <label for="collapse-toggle19" class="collapse-btn botonget">/obtener_productos {metodo: get}</label>
+    <div id="collapse-content19" class="collapse-content">
+      <h3>Ruta</h3>
+      <p>/obtener_productos</p>
+      <p>Metodo: GET</p>
+      <h3>Descripcion</h3>
+      <p>Ruta para obtener todos los productos</p>
+      <h3>Parametros</h3>
+      <p>Sin parámetros</p>
+      <h3>Respuesta</h3>
+      <p> {error 500}(error al obtener datos): Error al obtener datos</p>
+      <p> {respuesta ok}: [{"ID": "Number","Nombre": "String", "Descripcion": "String", "Precio": "Number", "Imagen": "String", "Codigo": "String"}] </p>
+    </div>
+  </div>
+  <br/>
+</body>
   
-  <style>
-    .boton {
-      background-color: #ffac33;
-      border: none;
-      color: white;
-      padding: 15px 32px;
-      text-align: center;
-      text-decoration: none;
-      display: inline-block;
-      font-size: 16px;
-      margin: 4px 2px;
-      cursor: pointer;
-    }
-  
-    .botonget {
-      background-color: #4CAF50;
-      border: none;
-      color: white;
-      padding: 15px 32px;
-      text-align: center;
-      text-decoration: none;
-      display: inline-block;
-      font-size: 16px;
-      margin: 4px 2px;
-      cursor: pointer;
-    }
-  
-    .botonpost {
-      background-color: #008CBA;
-      border: none;
-      color: white;
-      padding: 15px 32px;
-      text-align: center;
-      text-decoration: none;
-      display: inline-block;
-      font-size: 16px;
-      margin: 4px 2px;
-      cursor: pointer;
-    }
-    
-    .collapse-content {
-      display: none;
-      margin-left: 20px; /* Indentación para los colapsables anidados */
-    }
-  
-    input[type="checkbox"]:checked + .collapse-btn + .collapse-content {
-      display: block;
-    }
-  </style>`);
+  `);
 });
 
 // ------------ Rutas por vistas ------------
