@@ -4,7 +4,7 @@ services:
   web:
     build: .
     ports:
-      - "3000:3000"
+      - "80:80"
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
@@ -28,7 +28,7 @@ services:
     image: adminer
     restart: always
     ports:
-      - 8080:8080
+      - 8080:443
     depends_on:
       - db
     networks:
