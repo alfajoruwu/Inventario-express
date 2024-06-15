@@ -51,14 +51,14 @@ app.post("/Registrar", (req, res) => {
 
 
 app.post("/Login", (req, res) => {
-  const { Usuario, Contrasena } = req.body;
+  const { Correo, Contrasena } = req.body;
 
-  const sql = `SELECT * FROM Usuario WHERE Nombre = ? AND Contrasena = ?`;
-  pool.query(sql, [Usuario, Contrasena], (err, results) => {
+  const sql = `SELECT * FROM Usuario WHERE Correo = ? AND Contrasena = ?`;
+  pool.query(sql, [Correo, Contrasena], (err, results) => {
     if (err || results.length === 0) {
       return res.status(401).json({ error: "Usuario incorrecto" });
     }
-    res.status(200).json({ Usuario: results[0].Nombre, Contrasena: results[0].Contrasena });
+    res.status(200).json({ Usuario: results[0].Correo, Contrasena: results[0].Contrasena });
   });
 });
 
