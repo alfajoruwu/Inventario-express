@@ -242,6 +242,42 @@
     </div>
   </div>
 
+  <!-- Endpoint: GET /Obtener_tags -->
+<div class="card endpoint-card">
+    <div class="card-header">
+      <h5 class="mb-0">
+        <button class="btn btn-link toggle-details" type="button" data-toggle="collapse" data-target="#obtenerTagsEndpointCollapse">
+          <i class="fas fa-angle-down"></i> GET /Obtener_tags
+        </button>
+      </h5>
+    </div>
+    <div id="obtenerTagsEndpointCollapse" class="collapse">
+      <div class="card-body">
+        <h5>Descripción</h5>
+        <p>Obtiene las etiquetas creadas por un usuario específico.</p>
+        
+        <h5>Parámetros</h5>
+        <ul>
+          <li><strong>Correo_usuario:</strong> Correo electrónico del usuario del cual se desean obtener las etiquetas.</li>
+        </ul>
+  
+        <h5>Ejemplo de uso</h5>
+        <pre>
+          <code class="language-http">
+  GET /Obtener_tags?Correo_usuario=usuario@example.com
+          </code>
+        </pre>
+  
+        <h5>Respuestas</h5>
+        <ul>
+          <li>200 OK: Retorna un arreglo de objetos JSON con los nombres de las etiquetas del usuario.</li>
+          <li>401 Unauthorized: Si el usuario proporcionado no es válido o no tiene acceso.</li>
+          <li>500 Internal Server Error: Error interno del servidor.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
   <h2> Articulos </h2>
   
 <!-- Endpoint: GET /Obtener_articulos -->

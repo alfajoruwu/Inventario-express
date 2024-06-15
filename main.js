@@ -136,6 +136,23 @@ app.post("/Crear_tag", (req, res) => {
   });
 });
 
+app.get("/Obtener_tags", (req, res) => {
+  const { Correo_usuario } = req.query;
+
+  const sql = `
+    SELECT Tag.Nombre
+    FROM Tag
+    JOIN Usuario ON Tag.Usuario = Usuario.ID
+    WHERE Usuario.Correo = ?
+  `;
+  pool.query(sql, [Correo_usuario], (err, results) => {
+    if (err) {
+      return res.status(401).json({ error: "Usuario incorrecto" });
+    }
+    res.status(200).json(results);
+  });
+});
+
 // ------------ Productos ------------
 app.get('/Obtener_articulos', (req, res) => {
   const { Bodega_Nombre } = req.query;
