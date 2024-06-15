@@ -88,9 +88,18 @@ app.get("/Obtener_Bodegas", (req, res) => {
 app.post("/Crear_bodega", (req, res) => {
   const { Nombre_bodega, Correo_usuario, Lista_tags } = req.body;
 
+  // Verificación de parámetros
+  if (!Nombre_bodega || !Correo_usuario || !Array.isArray(Lista_tags)) {
+    return res.status(400).json({ error: "Datos insuficientes o incorrectos" });
+  }
+
   const userQuery = `SELECT ID FROM Usuario WHERE Correo = ?`;
   pool.query(userQuery, [Correo_usuario], (err, userResults) => {
-    if (err || userResults.length === 0) {
+    if (err) {
+      console.error("Error en la consulta del usuario:", err);
+      return res.status(500).json({ error: "Error en el servidor" });
+    }
+    if (userResults.length === 0) {
       return res.status(401).json({ error: "Usuario incorrecto" });
     }
 
@@ -99,6 +108,7 @@ app.post("/Crear_bodega", (req, res) => {
     const bodegaQuery = `INSERT INTO Bodega (Nombre, Codigo_invitacion) VALUES (?, '1234')`;
     pool.query(bodegaQuery, [Nombre_bodega], (err, bodegaResults) => {
       if (err) {
+        console.error("Error al crear la bodega:", err);
         return res.status(500).json({ error: "Error al crear la bodega" });
       }
 
@@ -107,6 +117,7 @@ app.post("/Crear_bodega", (req, res) => {
       const administraQuery = `INSERT INTO Administra (Tipo, Usuario_ID, Bodega_ID) VALUES ('Administrador', ?, ?)`;
       pool.query(administraQuery, [userId, bodegaId], (err) => {
         if (err) {
+          console.error("Error al asociar la bodega con el usuario:", err);
           return res.status(500).json({ error: "Error al asociar la bodega con el usuario" });
         }
 
@@ -115,6 +126,7 @@ app.post("/Crear_bodega", (req, res) => {
 
         pool.query(tagQuery, [tagValues], (err) => {
           if (err) {
+            console.error("Error al asociar etiquetas con la bodega:", err);
             return res.status(500).json({ error: "Error al asociar etiquetas con la bodega" });
           }
           res.status(200).json({ message: "Bodega creada y asociada correctamente" });
@@ -123,7 +135,6 @@ app.post("/Crear_bodega", (req, res) => {
     });
   });
 });
-
 app.post("/Crear_tag", (req, res) => {
   const { Nombre_tag, Correo_usuario } = req.body;
 
