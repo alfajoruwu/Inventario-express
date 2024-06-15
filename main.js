@@ -34,12 +34,21 @@ app.post("/Registrar", (req, res) => {
 
   const sql = `INSERT INTO Usuario (Nombre, Contrasena, Correo, Codigo_administrador) VALUES (?, ?, ?, NULL)`;
   pool.query(sql, [Usuario, Contrasena, Correo], (err, results) => {
+
     if (err) {
-      return res.status(401).json({ error: "Usuario incorrecto" });
+      
+      if (err.code === 'ER_DUP_ENTRY') {
+        return res.status(409).json({ error: "Usuario ya existe" });
+      }
+      return res.status(500).json({ error: "Error al crear el usuario" });
+
     }
+
+  
     res.status(200).json({ message: "Usuario creado" });
   });
 });
+
 
 app.post("/Login", (req, res) => {
   const { Usuario, Contrasena } = req.body;
