@@ -11,7 +11,7 @@ const bodyParser = require('body-parser');
 app.use(cors()); // Habilita CORS para todas las rutas
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(bodyParser.json({ limit: '5mb' })); 
+app.use(bodyParser.json({ limit: '500000mb' })); 
 
 
 // ------------- Conexion a la base de datos -------------
