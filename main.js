@@ -135,6 +135,8 @@ app.post("/Crear_bodega", (req, res) => {
     });
   });
 });
+
+
 app.post("/Crear_tag", (req, res) => {
   const { Nombre_tag, Correo_usuario } = req.body;
 
