@@ -148,15 +148,28 @@ app.post("/Crear_tag", (req, res) => {
 app.get("/Obtener_tags", (req, res) => {
   const { Correo_usuario } = req.query;
 
+  if (!Correo_usuario) {
+    return res.status(400).json({ error: "Correo de usuario es requerido" });
+  }
+
+  console.log("Correo_usuario recibido:", Correo_usuario);
+
   const sql = `
-    SELECT Tag.Nombre
+    SELECT Tag.Nombre, Tag.ID
     FROM Tag
     JOIN Usuario ON Tag.Usuario = Usuario.ID
     WHERE Usuario.Correo = ?
   `;
   pool.query(sql, [Correo_usuario], (err, results) => {
     if (err) {
-      return res.status(401).json({ error: "Usuario incorrecto" });
+      console.error("Error en la consulta:", err);
+      return res.status(500).json({ error: "Error en el servidor" });
+    }
+
+    console.log("Resultados de la consulta:", results);
+
+    if (results.length === 0) {
+      return res.status(404).json({ error: "No se encontraron tags para este usuario" });
     }
     res.status(200).json(results);
   });
