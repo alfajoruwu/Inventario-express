@@ -16,7 +16,10 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 
 function bufferToBase64(buffer) {
-  return buffer.toString('base64');
+  const bufferData = Buffer.from(buffer, 'binary');
+  const base64Image = bufferData.toString('base64');
+  const decodedData = atob(base64Image);
+  return decodedData
 }
 
 
@@ -213,12 +216,15 @@ app.get('/Obtener_articulos', (req, res) => {
     if (error) {
       return res.status(500).json({ error: 'Error al obtener los artículos' });
     }
+    const productosConImagen = results.map(producto => {
+      const imageBuffer = producto.Imagen;
+      return {
+        ...producto,
+        Imagen: bufferToBase64(imageBuffer)
+      };
+    });
 
-    const imageBuffer = results[0].Imagen;
-    const base64Image = bufferToBase64(imageBuffer);
-
-    res.status(200).json({ ...results[0], Imagen: base64Image });
- 
+    res.status(200).json(productosConImagen);
   });
 });
 
