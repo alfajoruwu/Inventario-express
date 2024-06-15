@@ -24,7 +24,7 @@ CREATE TABLE Producto (
     ID INT PRIMARY KEY AUTO_INCREMENT,
     Nombre VARCHAR(255),
     Descripcion VARCHAR(255),
-    Imagen LONGTEXT,
+    Imagen LONGBLOB,
     Precio DECIMAL(10, 2),
     Codigo VARCHAR(50)
 );

@@ -2,16 +2,19 @@ const express = require("express");
 const mysql = require('mysql2');
 const app = express();
 const port = 3000;
-app.use(express.json());
 const cors = require('cors');
 const path = require('path');
-const bodyParser = require('body-parser');
+
+
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // ------------- cors ----------------------
 app.use(cors()); // Habilita CORS para todas las rutas
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(bodyParser.json({ limit: '500000mb' })); 
+
+
 
 
 // ------------- Conexion a la base de datos -------------
@@ -218,9 +221,9 @@ app.post('/Crear_Producto', (req, res) => {
   // Insertar el nuevo producto en la tabla Producto
   pool.query('INSERT INTO Producto (Nombre, Descripcion, Imagen, Precio, Codigo) VALUES (?, ?, ?, ?, ?)', 
   [Nombre, Descripcion, Imagen, Precio, Codigo], (error, results) => {
-      if (error) {
-          return res.status(500).json({ error: 'Error al crear el producto' });
-      }
+    if (error) {
+      return res.status(500).json({ error: 'Error al crear el producto', message: error.message });
+    }
       
       // Obtener el ID del producto recién insertado
       const productoId = results.insertId;
