@@ -210,16 +210,29 @@ app.get('/Obtener_articulos', (req, res) => {
 
 
 app.post('/Crear_Producto', (req, res) => {
-  const { Nombre, Descripcion, Imagen, Precio, Codigo } = req.body;
+  const { Nombre, Descripcion, Imagen, Precio, Codigo, Bodega_ID } = req.body;
 
+  // Insertar el nuevo producto en la tabla Producto
   pool.query('INSERT INTO Producto (Nombre, Descripcion, Imagen, Precio, Codigo) VALUES (?, ?, ?, ?, ?)', 
   [Nombre, Descripcion, Imagen, Precio, Codigo], (error, results) => {
       if (error) {
           return res.status(500).json({ error: 'Error al crear el producto' });
       }
-      res.status(200).json({ message: 'Producto creado con éxito' });
+      
+      // Obtener el ID del producto recién insertado
+      const productoId = results.insertId;
+
+      // Insertar la asociación en la tabla Guarda
+      pool.query('INSERT INTO Guarda (Bodega_ID, Producto_ID) VALUES (?, ?)', 
+      [Bodega_ID, productoId], (error, results) => {
+          if (error) {
+              return res.status(500).json({ error: 'Error al asociar el producto con la bodega' });
+          }
+          res.status(200).json({ message: 'Producto creado y asociado con éxito' });
+      });
   });
 });
+
 
 app.get('/Obtener_Stock', (req, res) => {
   const { Producto_nombre, Bodega_Nombre } = req.query;
