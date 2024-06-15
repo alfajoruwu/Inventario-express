@@ -15,6 +15,10 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 
+function bufferToBase64(buffer) {
+  return buffer.toString('base64');
+}
+
 
 
 // ------------- Conexion a la base de datos -------------
@@ -209,7 +213,12 @@ app.get('/Obtener_articulos', (req, res) => {
     if (error) {
       return res.status(500).json({ error: 'Error al obtener los artículos' });
     }
-    res.status(200).json(results);
+
+    const imageBuffer = results[0].Imagen;
+    const base64Image = bufferToBase64(imageBuffer);
+
+    res.status(200).json({ ...results[0], Imagen: base64Image });
+ 
   });
 });
 
