@@ -68,7 +68,7 @@ app.get("/Obtener_Bodegas", (req, res) => {
   const { Correo_usuario } = req.query;
 
   const sql = `
-    SELECT Bodega.Nombre, GROUP_CONCAT(Tag.Nombre) AS Tags
+    SELECT Bodega.ID, Bodega.Nombre, GROUP_CONCAT(Tag.Nombre) AS Tags
     FROM Bodega
     JOIN Categorisa ON Bodega.ID = Categorisa.Bodega_ID
     JOIN Tag ON Categorisa.Tag_ID = Tag.ID
