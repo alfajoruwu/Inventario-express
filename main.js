@@ -5,11 +5,14 @@ const port = 3000;
 app.use(express.json());
 const cors = require('cors');
 const path = require('path');
+const bodyParser = require('body-parser');
 
 // ------------- cors ----------------------
 app.use(cors()); // Habilita CORS para todas las rutas
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(bodyParser.json({ limit: '5mb' })); 
+
 
 // ------------- Conexion a la base de datos -------------
 const pool = mysql.createPool({
