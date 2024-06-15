@@ -190,23 +190,23 @@ app.get("/Obtener_tags", (req, res) => {
 
 // ------------ Productos ------------
 app.get('/Obtener_articulos', (req, res) => {
-  const { Bodega_Nombre } = req.query;
+  const { Bodega_ID } = req.query;
 
   const sql = `
     SELECT Producto.*
     FROM Producto
     JOIN Guarda ON Producto.ID = Guarda.Producto_ID
-    JOIN Bodega ON Guarda.Bodega_ID = Bodega.ID
-    WHERE Bodega.Nombre = ?
+    WHERE Guarda.Bodega_ID = ?
   `;
 
-  pool.query(sql, [Bodega_Nombre], (error, results) => {
+  pool.query(sql, [Bodega_ID], (error, results) => {
     if (error) {
       return res.status(500).json({ error: 'Error al obtener los artículos' });
     }
     res.status(200).json(results);
   });
 });
+
 
 
 app.post('/Crear_Producto', (req, res) => {
@@ -235,35 +235,37 @@ app.post('/Crear_Producto', (req, res) => {
 
 
 app.get('/Obtener_Stock', (req, res) => {
-  const { Producto_nombre, Bodega_Nombre } = req.query;
+  const { Producto_nombre, Bodega_ID } = req.query;
 
   pool.query(`
-      SELECT Lote.Cantidad, Lote.Fecha_de_vencimiento, Lote.Fecha_de_llegada 
-      FROM Lote 
-      JOIN Producto ON Lote.Producto_ID = Producto.ID 
-      JOIN Bodega ON Lote.Bodega_ID = Bodega.ID 
-      WHERE Producto.Nombre = ? AND Bodega.Nombre = ?
-  `, [Producto_nombre, Bodega_Nombre], (error, results) => {
-      if (error) {
-          return res.status(500).json({ error: 'Error al obtener el stock' });
-      }
-      res.status(200).json(results);
+    SELECT Lote.Cantidad, Lote.Fecha_de_vencimiento, Lote.Fecha_de_llegada 
+    FROM Lote 
+    WHERE Lote.Producto_ID = (
+      SELECT ID FROM Producto WHERE Nombre = ?
+    ) AND Lote.Bodega_ID = ?
+  `, [Producto_nombre, Bodega_ID], (error, results) => {
+    if (error) {
+      return res.status(500).json({ error: 'Error al obtener el stock' });
+    }
+    res.status(200).json(results);
   });
 });
+
 
 app.post('/Añadir_Stock', (req, res) => {
-  const { Cantidad, Fecha_vencimiento, Fecha_ingreso, Producto_nombre, Bodega_Nombre } = req.body;
+  const { Cantidad, Fecha_vencimiento, Fecha_ingreso, Producto_nombre, Bodega_ID } = req.body;
 
   pool.query(`
-      INSERT INTO Lote (Cantidad, Fecha_de_vencimiento, Fecha_de_llegada, Producto_ID, Bodega_ID) 
-      VALUES (?, ?, ?, (SELECT ID FROM Producto WHERE Nombre = ?), (SELECT ID FROM Bodega WHERE Nombre = ?))
-  `, [Cantidad, Fecha_vencimiento, Fecha_ingreso, Producto_nombre, Bodega_Nombre], (error, results) => {
-      if (error) {
-          return res.status(500).json({ error: 'Error al añadir el stock' });
-      }
-      res.status(200).json({ message: 'Stock añadido con éxito' });
+    INSERT INTO Lote (Cantidad, Fecha_de_vencimiento, Fecha_de_llegada, Producto_ID, Bodega_ID) 
+    VALUES (?, ?, ?, (SELECT ID FROM Producto WHERE Nombre = ?), ?)
+  `, [Cantidad, Fecha_vencimiento, Fecha_ingreso, Producto_nombre, Bodega_ID], (error, results) => {
+    if (error) {
+      return res.status(500).json({ error: 'Error al añadir el stock' });
+    }
+    res.status(200).json({ message: 'Stock añadido con éxito' });
   });
 });
+
 
 app.put('/Editar_Producto', (req, res) => {
   const { ID, Nombre, Descripcion, Imagen, Precio, Codigo } = req.body;
