@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Documentación de API</title>
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <style>
+    .endpoint-card {
+      margin-bottom: 20px;
+    }
+    .endpoint-details {
+      display: none;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    
+    <h1 class="mt-5">Documentación de API - Inventario Facilito</h1>
+
+    <br/>
+
+    <h2> Usuarios </h2>
+
+    <!-- Endpoint: POST /Registrar -->
+<div class="card endpoint-card">
+    <div class="card-header">
+      <h5 class="mb-0">
+        <button class="btn btn-link toggle-details" type="button" data-toggle="collapse" data-target="#registrarEndpointCollapse">
+          <i class="fas fa-angle-down"></i> POST /Registrar
+        </button>
+      </h5>
+    </div>
+    <div id="registrarEndpointCollapse" class="collapse">
+      <div class="card-body">
+        <h5>Descripción</h5>
+        <p>Crea un nuevo usuario en la base de datos.</p>
+        
+        <h5>Parámetros</h5>
+        <ul>
+          <li><strong>Usuario:</strong> Nombre del usuario.</li>
+          <li><strong>Contrasena:</strong> Contraseña del usuario.</li>
+          <li><strong>Correo:</strong> Correo electrónico del usuario.</li>
+        </ul>
+  
+        <h5>Ejemplo de uso</h5>
+        <pre>
+          <code class="language-http">
+  POST /Registrar
+  Content-Type: application/json
+  
+  {
+    "Usuario": "ejemploUsuario",
+    "Contrasena": "ejemplo123",
+    "Correo": "usuario@example.com"
+  }
+          </code>
+        </pre>
+  
+        <h5>Respuestas</h5>
+        <ul>
+          <li>200 OK: Usuario creado exitosamente.</li>
+          <li>401 Unauthorized: Error si el usuario ya existe o hay algún otro problema.</li>
+          <li>500 Internal Server Error: Error interno del servidor.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  
+
+  <!-- Endpoint: POST /Login -->
+<div class="card endpoint-card">
+    <div class="card-header">
+      <h5 class="mb-0">
+        <button class="btn btn-link toggle-details" type="button" data-toggle="collapse" data-target="#loginEndpointCollapse">
+          <i class="fas fa-angle-down"></i> POST /Login
+        </button>
+      </h5>
+    </div>
+    <div id="loginEndpointCollapse" class="collapse">
+      <div class="card-body">
+        <h5>Descripción</h5>
+        <p>Autentica a un usuario comparando el nombre de usuario y contraseña proporcionados con los registros de la base de datos.</p>
+        
+        <h5>Parámetros</h5>
+        <ul>
+          <li><strong>Usuario:</strong> Nombre de usuario.</li>
+          <li><strong>Contrasena:</strong> Contraseña del usuario.</li>
+        </ul>
+  
+        <h5>Ejemplo de uso</h5>
+        <pre>
+          <code class="language-http">
+  POST /Login
+  Content-Type: application/json
+  
+  {
+    "Usuario": "ejemploUsuario",
+    "Contrasena": "ejemplo123"
+  }
+          </code>
+        </pre>
+  
+        <h5>Respuestas</h5>
+        <ul>
+          <li>200 OK: Si la autenticación es exitosa. Retorna el nombre de usuario y la contraseña.</li>
+          <li>401 Unauthorized: Si las credenciales proporcionadas son incorrectas o el usuario no existe.</li>
+          <li>500 Internal Server Error: Error interno del servidor.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  
+  <h2> Bodegas </h2>
+
+  <!-- Endpoint: GET /Obtener_Bodegas -->
+<div class="card endpoint-card">
+    <div class="card-header">
+      <h5 class="mb-0">
+        <button class="btn btn-link toggle-details" type="button" data-toggle="collapse" data-target="#obtenerBodegasEndpointCollapse">
+          <i class="fas fa-angle-down"></i> GET /Obtener_Bodegas
+        </button>
+      </h5>
+    </div>
+    <div id="obtenerBodegasEndpointCollapse" class="collapse">
+      <div class="card-body">
+        <h5>Descripción</h5>
+        <p>Obtiene las bodegas asociadas a un usuario específico junto con las etiquetas asociadas a cada bodega.</p>
+        
+        <h5>Parámetros</h5>
+        <ul>
+          <li><strong>Correo_usuario:</strong> Correo electrónico del usuario cuyas bodegas se quieren obtener.</li>
+        </ul>
+  
+        <h5>Ejemplo de uso</h5>
+        <pre>
+          <code class="language-http">
+  GET /Obtener_Bodegas?Correo_usuario=usuario@example.com
+          </code>
+        </pre>
+  
+        <h5>Respuestas</h5>
+        <ul>
+          <li>200 OK: Retorna un arreglo de objetos donde cada objeto contiene el nombre de la bodega y las etiquetas asociadas.</li>
+          <li>401 Unauthorized: Si el usuario proporcionado no es válido o no tiene acceso.</li>
+          <li>500 Internal Server Error: Error interno del servidor.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  
+  <!-- Endpoint: POST /Crear_bodega -->
+<div class="card endpoint-card">
+    <div class="card-header">
+      <h5 class="mb-0">
+        <button class="btn btn-link toggle-details" type="button" data-toggle="collapse" data-target="#crearBodegaEndpointCollapse">
+          <i class="fas fa-angle-down"></i> POST /Crear_bodega
+        </button>
+      </h5>
+    </div>
+    <div id="crearBodegaEndpointCollapse" class="collapse">
+      <div class="card-body">
+        <h5>Descripción</h5>
+        <p>Crea una nueva bodega en la base de datos y la asocia al usuario especificado junto con las etiquetas proporcionadas.</p>
+        
+        <h5>Parámetros</h5>
+        <ul>
+          <li><strong>Nombre_bodega:</strong> Nombre de la nueva bodega a crear.</li>
+          <li><strong>Correo_usuario:</strong> Correo electrónico del usuario que será administrador de la bodega.</li>
+          <li><strong>Lista_tags:</strong> Arreglo de IDs de etiquetas que se asociarán a la nueva bodega.</li>
+        </ul>
+  
+        <h5>Ejemplo de uso</h5>
+        <pre>
+          <code class="language-http">
+  POST /Crear_bodega
+  Content-Type: application/json
+  
+  {
+    "Nombre_bodega": "Ejemplo Bodega",
+    "Correo_usuario": "usuario@example.com",
+    "Lista_tags": [1, 2]
+  }
+          </code>
+        </pre>
+  
+        <h5>Respuestas</h5>
+        <ul>
+          <li>200 OK: Bodega creada y asociada correctamente.</li>
+          <li>401 Unauthorized: Si el usuario proporcionado no es válido.</li>
+          <li>500 Internal Server Error: Error interno del servidor al crear la bodega o asociar etiquetas.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  
+  <!-- Endpoint: POST /Crear_tag -->
+<div class="card endpoint-card">
+    <div class="card-header">
+      <h5 class="mb-0">
+        <button class="btn btn-link toggle-details" type="button" data-toggle="collapse" data-target="#crearTagEndpointCollapse">
+          <i class="fas fa-angle-down"></i> POST /Crear_tag
+        </button>
+      </h5>
+    </div>
+    <div id="crearTagEndpointCollapse" class="collapse">
+      <div class="card-body">
+        <h5>Descripción</h5>
+        <p>Crea una nueva etiqueta en la base de datos asociada al usuario especificado.</p>
+        
+        <h5>Parámetros</h5>
+        <ul>
+          <li><strong>Nombre_tag:</strong> Nombre de la nueva etiqueta a crear.</li>
+          <li><strong>Correo_usuario:</strong> Correo electrónico del usuario que crea la etiqueta.</li>
+        </ul>
+  
+        <h5>Ejemplo de uso</h5>
+        <pre>
+          <code class="language-http">
+  POST /Crear_tag
+  Content-Type: application/json
+  
+  {
+    "Nombre_tag": "Electrónica",
+    "Correo_usuario": "usuario@example.com"
+  }
+          </code>
+        </pre>
+  
+        <h5>Respuestas</h5>
+        <ul>
+          <li>200 OK: Etiqueta creada correctamente.</li>
+          <li>401 Unauthorized: Si el usuario proporcionado no es válido.</li>
+          <li>500 Internal Server Error: Error interno del servidor al crear la etiqueta.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <h2> Articulos </h2>
+  
+<!-- Endpoint: GET /Obtener_articulos -->
+<div class="card endpoint-card">
+    <div class="card-header">
+      <h5 class="mb-0">
+        <button class="btn btn-link toggle-details" type="button" data-toggle="collapse" data-target="#obtenerArticulosEndpointCollapse">
+          <i class="fas fa-angle-down"></i> GET /Obtener_articulos
+        </button>
+      </h5>
+    </div>
+    <div id="obtenerArticulosEndpointCollapse" class="collapse">
+      <div class="card-body">
+        <h5>Descripción</h5>
+        <p>Obtiene los productos almacenados en una bodega específica.</p>
+        
+        <h5>Parámetros</h5>
+        <ul>
+          <li><strong>Bodega_Nombre:</strong> Nombre de la bodega de la cual se desean obtener los productos.</li>
+        </ul>
+  
+        <h5>Ejemplo de uso</h5>
+        <pre>
+          <code class="language-http">
+  GET /Obtener_articulos?Bodega_Nombre=Bodega1
+  Content-Type: application/json
+          </code>
+        </pre>
+  
+        <h5>Respuestas</h5>
+        <ul>
+          <li>200 OK: Lista de productos obtenidos correctamente.</li>
+          <li>500 Internal Server Error: Error interno del servidor al intentar obtener los productos.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  
+  <!-- Endpoint: POST /Crear_Producto -->
+<div class="card endpoint-card">
+    <div class="card-header">
+      <h5 class="mb-0">
+        <button class="btn btn-link toggle-details" type="button" data-toggle="collapse" data-target="#crearProductoEndpointCollapse">
+          <i class="fas fa-angle-down"></i> POST /Crear_Producto
+        </button>
+      </h5>
+    </div>
+    <div id="crearProductoEndpointCollapse" class="collapse">
+      <div class="card-body">
+        <h5>Descripción</h5>
+        <p>Crea un nuevo producto en la base de datos con los detalles proporcionados.</p>
+        
+        <h5>Parámetros</h5>
+        <ul>
+          <li><strong>Nombre:</strong> Nombre del producto.</li>
+          <li><strong>Descripcion:</strong> Descripción del producto.</li>
+          <li><strong>Imagen:</strong> URL o base64 de la imagen del producto.</li>
+          <li><strong>Precio:</strong> Precio del producto.</li>
+          <li><strong>Codigo:</strong> Código único del producto.</li>
+        </ul>
+  
+        <h5>Ejemplo de uso</h5>
+        <pre>
+          <code class="language-http">
+  POST /Crear_Producto
+  Content-Type: application/json
+  
+  {
+    "Nombre": "Producto1",
+    "Descripcion": "Descripción del producto 1",
+    "Imagen": "https://ejemplo.com/imagen1.jpg",
+    "Precio": 100.50,
+    "Codigo": "ABC123"
+  }
+          </code>
+        </pre>
+  
+        <h5>Respuestas</h5>
+        <ul>
+          <li>200 OK: Producto creado correctamente.</li>
+          <li>500 Internal Server Error: Error interno del servidor al intentar crear el producto.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  
+  <!-- Endpoint: GET /Obtener_Stock -->
+<div class="card endpoint-card">
+    <div class="card-header">
+      <h5 class="mb-0">
+        <button class="btn btn-link toggle-details" type="button" data-toggle="collapse" data-target="#obtenerStockEndpointCollapse">
+          <i class="fas fa-angle-down"></i> GET /Obtener_Stock
+        </button>
+      </h5>
+    </div>
+    <div id="obtenerStockEndpointCollapse" class="collapse">
+      <div class="card-body">
+        <h5>Descripción</h5>
+        <p>Obtiene la información de stock de un producto específico en una bodega específica.</p>
+        
+        <h5>Parámetros</h5>
+        <ul>
+          <li><strong>Producto_nombre:</strong> Nombre del producto del cual se desea obtener el stock.</li>
+          <li><strong>Bodega_Nombre:</strong> Nombre de la bodega donde se encuentra el producto.</li>
+        </ul>
+  
+        <h5>Ejemplo de uso</h5>
+        <pre>
+          <code class="language-http">
+  GET /Obtener_Stock?Producto_nombre=Producto1&Bodega_Nombre=Bodega1
+          </code>
+        </pre>
+  
+        <h5>Respuestas</h5>
+        <ul>
+          <li>200 OK: Retorna un arreglo de objetos JSON con los detalles del stock del producto en la bodega.</li>
+          <li>500 Internal Server Error: Error interno del servidor al intentar obtener el stock.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  
+  <!-- Endpoint: POST /Añadir_Stock -->
+<div class="card endpoint-card">
+    <div class="card-header">
+      <h5 class="mb-0">
+        <button class="btn btn-link toggle-details" type="button" data-toggle="collapse" data-target="#anadirStockEndpointCollapse">
+          <i class="fas fa-angle-down"></i> POST /Añadir_Stock
+        </button>
+      </h5>
+    </div>
+    <div id="anadirStockEndpointCollapse" class="collapse">
+      <div class="card-body">
+        <h5>Descripción</h5>
+        <p>Añade stock de un producto a una bodega específica.</p>
+        
+        <h5>Parámetros</h5>
+        <ul>
+          <li><strong>Cantidad:</strong> Cantidad del producto a añadir al stock.</li>
+          <li><strong>Fecha_vencimiento:</strong> Fecha de vencimiento del lote añadido.</li>
+          <li><strong>Fecha_ingreso:</strong> Fecha de ingreso del lote añadido.</li>
+          <li><strong>Producto_nombre:</strong> Nombre del producto al cual se añadirá el stock.</li>
+          <li><strong>Bodega_Nombre:</strong> Nombre de la bodega donde se añadirá el stock.</li>
+        </ul>
+  
+        <h5>Ejemplo de uso</h5>
+        <pre>
+          <code class="language-http">
+  POST /Añadir_Stock
+  Content-Type: application/json
+  
+  {
+    "Cantidad": 100,
+    "Fecha_vencimiento": "2025-12-31",
+    "Fecha_ingreso": "2024-06-15",
+    "Producto_nombre": "Producto1",
+    "Bodega_Nombre": "Bodega1"
+  }
+          </code>
+        </pre>
+  
+        <h5>Respuestas</h5>
+        <ul>
+          <li>200 OK: Stock añadido correctamente a la bodega.</li>
+          <li>500 Internal Server Error: Error interno del servidor al intentar añadir el stock.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  
+  <!-- Endpoint: PUT /Editar_Producto -->
+<div class="card endpoint-card">
+    <div class="card-header">
+      <h5 class="mb-0">
+        <button class="btn btn-link toggle-details" type="button" data-toggle="collapse" data-target="#editarProductoEndpointCollapse">
+          <i class="fas fa-angle-down"></i> PUT /Editar_Producto
+        </button>
+      </h5>
+    </div>
+    <div id="editarProductoEndpointCollapse" class="collapse">
+      <div class="card-body">
+        <h5>Descripción</h5>
+        <p>Edita los detalles de un producto existente.</p>
+        
+        <h5>Parámetros</h5>
+        <ul>
+          <li><strong>ID:</strong> ID del producto que se desea editar.</li>
+          <li><strong>Nombre:</strong> Nuevo nombre del producto.</li>
+          <li><strong>Descripcion:</strong> Nueva descripción del producto.</li>
+          <li><strong>Imagen:</strong> Nueva URL de la imagen del producto.</li>
+          <li><strong>Precio:</strong> Nuevo precio del producto.</li>
+          <li><strong>Codigo:</strong> Nuevo código del producto.</li>
+        </ul>
+  
+        <h5>Ejemplo de uso</h5>
+        <pre>
+          <code class="language-http">
+  PUT /Editar_Producto
+  Content-Type: application/json
+  
+  {
+    "ID": 1,
+    "Nombre": "Nuevo Nombre",
+    "Descripcion": "Nueva descripción",
+    "Imagen": "https://ejemplo.com/nueva-imagen.jpg",
+    "Precio": 15000,
+    "Codigo": "987654"
+  }
+          </code>
+        </pre>
+  
+        <h5>Respuestas</h5>
+        <ul>
+          <li>200 OK: Producto editado correctamente.</li>
+          <li>500 Internal Server Error: Error interno del servidor al intentar editar el producto.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  
+
+
+
+
+
+    <!-- Scripts necesarios -->
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js" integrity="sha384-EW1A8p8/DeDXwY2FJAxhBRTNEyIPwwOT7FMHo+Rv3f+ndMF+6Qpe4aWuVz3sW1S" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js" integrity="sha384-VoPFKCyJ/a+n14GMYoXzFkFJs8fP3iFtg1B1rZwDz+Su38T1Mmlb6r0fPxG5i4m+" crossorigin="anonymous"></script>
+    
+  
+
+  <!-- Bootstrap JS y Prism para syntax highlighting -->
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Script para manejar el comportamiento de los botones de toggle
+    document.addEventListener('DOMContentLoaded', function () {
+      const toggleButtons = document.querySelectorAll('.toggle-details');
+      
+      toggleButtons.forEach(function (button) {
+        button.addEventListener('click', function () {
+          const target = button.getAttribute('data-target');
+          const collapse = document.querySelector(target);
+          
+          // Alternar la clase 'show' en el elemento de colapso
+          collapse.classList.toggle('show');
+        });
+      });
+    });
+  </script>
+</body>
+</html>
