@@ -106,7 +106,7 @@ INSERT INTO Bodega (Nombre, Codigo_invitacion) VALUES
 
 INSERT INTO Guarda (Bodega_ID, Producto_ID) VALUES
 (1, 1),
-(2, 1);
+(2, 2);
 
 INSERT INTO Compra (Cliente_ID, Cantidad, Usuario_ID, Lote_ID) VALUES
 (2, 10, 2, 1),

@@ -206,29 +206,30 @@ app.get('/Obtener_articulos', (req, res) => {
   const { Bodega_ID } = req.query;
 
   const sql = `
-    SELECT Producto.*
-    FROM Producto
-    JOIN Guarda ON Producto.ID = Guarda.Producto_ID
-    WHERE Guarda.Bodega_ID = ?
+  SELECT Producto.*, COALESCE(SUM(Lote.Cantidad), 0) AS Stock_Disponible
+  FROM Producto
+  JOIN Guarda ON Producto.ID = Guarda.Producto_ID
+  LEFT JOIN Lote ON Producto.ID = Lote.Producto_ID AND Guarda.Bodega_ID = Lote.Bodega_ID
+  WHERE Guarda.Bodega_ID = ?
+  GROUP BY Producto.ID, Guarda.Bodega_ID
   `;
 
   pool.query(sql, [Bodega_ID], (error, results) => {
     if (error) {
       return res.status(500).json({ error: 'Error al obtener los artículos' });
     }
-    const productosConImagen = results.map(producto => {
+    const productosConStock = results.map(producto => {
       const imageBuffer = producto.Imagen;
       return {
         ...producto,
-        Imagen: bufferToBase64(imageBuffer)
+        Imagen: bufferToBase64(imageBuffer),
+        Stock_Disponible: producto.Stock_Disponible  // Agregar el campo de stock disponible
       };
     });
 
-    res.status(200).json(productosConImagen);
+    res.status(200).json(productosConStock);
   });
 });
-
-
 
 app.post('/Crear_Producto', (req, res) => {
   const { Nombre, Descripcion, Imagen, Precio, Codigo, Bodega_ID } = req.body;
@@ -254,12 +255,38 @@ app.post('/Crear_Producto', (req, res) => {
   });
 });
 
+app.put('/Editar_Producto', (req, res) => {
+  const { ID, Nombre, Descripcion, Imagen, Precio, Codigo } = req.body;
+
+  pool.query('UPDATE Producto SET Nombre = ?, Descripcion = ?, Imagen = ?, Precio = ?, Codigo = ? WHERE ID = ?', 
+  [Nombre, Descripcion, Imagen, Precio, Codigo, ID], (error, results) => {
+      if (error) {
+          return res.status(500).json({ error: 'Error al editar el producto' });
+      }
+      res.status(200).json({ message: 'Producto editado con éxito' });
+  });
+});
+
+app.post('/Anadir_Stock', (req, res) => {
+  const { Cantidad, Fecha_vencimiento, Fecha_ingreso, Producto_nombre, Bodega_ID } = req.body;
+
+  pool.query(`
+    INSERT INTO Lote (Cantidad, Fecha_de_vencimiento, Fecha_de_llegada, Producto_ID, Bodega_ID) 
+    VALUES (?, ?, ?, (SELECT ID FROM Producto WHERE Nombre = ?), ?)
+  `, [Cantidad, Fecha_vencimiento, Fecha_ingreso, Producto_nombre, Bodega_ID], (error, results) => {
+    if (error) {
+      console.error('Error al ejecutar la consulta:', error);
+      return res.status(500).json({ error: 'Error al añadir el stock' });
+    }
+    res.status(200).json({ message: 'Stock añadido con éxito' });
+  });
+});
 
 app.get('/Obtener_Stock', (req, res) => {
   const { Producto_nombre, Bodega_ID } = req.query;
 
   pool.query(`
-    SELECT Lote.Cantidad, Lote.Fecha_de_vencimiento, Lote.Fecha_de_llegada 
+    SELECT Lote.ID, Lote.Cantidad, Lote.Fecha_de_vencimiento, Lote.Fecha_de_llegada 
     FROM Lote 
     WHERE Lote.Producto_ID = (
       SELECT ID FROM Producto WHERE Nombre = ?
@@ -272,33 +299,20 @@ app.get('/Obtener_Stock', (req, res) => {
   });
 });
 
+app.put('/Editar_Stock', (req, res) => {
+  const { ID, Cantidad, Fecha_vencimiento, Fecha_ingreso } = req.body;
 
-app.post('/Añadir_Stock', (req, res) => {
-  const { Cantidad, Fecha_vencimiento, Fecha_ingreso, Producto_nombre, Bodega_ID } = req.body;
-
-  pool.query(`
-    INSERT INTO Lote (Cantidad, Fecha_de_vencimiento, Fecha_de_llegada, Producto_ID, Bodega_ID) 
-    VALUES (?, ?, ?, (SELECT ID FROM Producto WHERE Nombre = ?), ?)
-  `, [Cantidad, Fecha_vencimiento, Fecha_ingreso, Producto_nombre, Bodega_ID], (error, results) => {
-    if (error) {
-      return res.status(500).json({ error: 'Error al añadir el stock' });
-    }
-    res.status(200).json({ message: 'Stock añadido con éxito' });
-  });
-});
-
-
-app.put('/Editar_Producto', (req, res) => {
-  const { ID, Nombre, Descripcion, Imagen, Precio, Codigo } = req.body;
-
-  pool.query('UPDATE Producto SET Nombre = ?, Descripcion = ?, Imagen = ?, Precio = ?, Codigo = ? WHERE ID = ?', 
-  [Nombre, Descripcion, Imagen, Precio, Codigo, ID], (error, results) => {
+  pool.query('UPDATE Lote SET Cantidad = ?, Fecha_de_vencimiento = ?, Fecha_de_llegada = ? WHERE ID = ?',
+  [Cantidad, Fecha_vencimiento, Fecha_ingreso, ID], (error, results) => {
       if (error) {
-          return res.status(500).json({ error: 'Error al editar el producto' });
+          return res.status(500).json({ error: 'Error al editar el stock' });
       }
-      res.status(200).json({ message: 'Producto editado con éxito' });
+      res.status(200).json({ message: 'Stock editado con éxito' });
   });
 });
+
+
+
 
 // ------------- Print del puerto -------------
 app.listen(port, () => {
