@@ -25,14 +25,18 @@ CREATE TABLE Producto (
     Nombre VARCHAR(255),
     Descripcion VARCHAR(255),
     Imagen LONGBLOB,
-    Precio DECIMAL(10, 2),
+    Precio DECIMAL(20, 2),
     Codigo VARCHAR(50)
 );
 
 CREATE TABLE Bodega (
     ID INT PRIMARY KEY AUTO_INCREMENT,
     Nombre VARCHAR(255),
-    Codigo_invitacion VARCHAR(50)
+    Codigo_invitacion VARCHAR(50),
+    Codigo_invitacion_admin VARCHAR(50),
+    UbicacionNombre VARCHAR(255),
+    UbicacionLatitud DECIMAL(20, 20),
+    UbicacionLongitud DECIMAL(20, 20);   
 );
 
 CREATE TABLE Guarda (
@@ -100,9 +104,10 @@ INSERT INTO Producto (Nombre, Descripcion, Imagen, Precio, Codigo) VALUES
 ('Articulo1', 'azul', 'base64', 5000, '1234512'),
 ('Articulo2', 'Verde', 'base64', 10000, '321312');
 
-INSERT INTO Bodega (Nombre, Codigo_invitacion) VALUES
-('Bodega1', '1234'),
-('Bodega2', '1234');
+
+INSERT INTO Bodega (Nombre, Codigo_invitacion,Codigo_invitacion_admin , UbicacionNombre, UbicacionLatitud, UbicacionLongitud) VALUES
+('Bodega1', '1234','4321', 'nombre1', -30.1112, 30.1231),
+('Bodega2', '1235','5321', 'nombre2', 31.1123, 34.12321);
 
 INSERT INTO Guarda (Bodega_ID, Producto_ID) VALUES
 (1, 1),

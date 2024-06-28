@@ -5,7 +5,6 @@ const port = 3000;
 const cors = require('cors');
 const path = require('path');
 
-
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
@@ -13,15 +12,6 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(cors()); // Habilita CORS para todas las rutas
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
-
-
-function bufferToBase64(buffer) {
-  const bufferData = Buffer.from(buffer, 'binary');
-  const base64Image = bufferData.toString('base64');
-  const decodedData = atob(base64Image);
-  return decodedData
-}
-
 
 
 // ------------- Conexion a la base de datos -------------
@@ -34,6 +24,22 @@ const pool = mysql.createPool({
   connectionLimit: 10,
   queueLimit: 0
 });
+
+
+// --------------- aux ---------------------------
+
+function getRandomInt(min, max) {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function bufferToBase64(buffer) {
+  const bufferData = Buffer.from(buffer, 'binary');
+  const base64Image = bufferData.toString('base64');
+  const decodedData = atob(base64Image);
+  return decodedData
+}
 
 // ------------- Inicial -------------
 app.get("/", (req, res) => {
@@ -62,7 +68,6 @@ app.post("/Registrar", (req, res) => {
   });
 });
 
-
 app.post("/Login", (req, res) => {
   const { Correo, Contrasena } = req.body;
 
@@ -75,13 +80,36 @@ app.post("/Login", (req, res) => {
   });
 });
 
+app.get("/Obtener_Codigo_Administrador", (req, res) => {
+  const { Correo_usuario } = req.query;
+
+  if (!Correo_usuario) {
+    return res.status(400).json({ error: "Correo_usuario is required" });
+  }
+
+  const sql = 'SELECT Codigo_administrador FROM Usuario WHERE Correo = ?';
+  pool.query(sql, [Correo_usuario], (err, results) => {
+    if (err) {
+      console.error("Error in the query:", err);
+      return res.status(500).json({ error: "Error in the server" });
+    }
+    if (results.length === 0) {
+      return res.status(404).json({ error: "Usuario no encontrado" });
+    }
+    res.status(200).json(results[0]);
+  });
+});
+
+
+
+
 // ------------ Bodegas ------------
 
 app.get("/Obtener_Bodegas", (req, res) => {
   const { Correo_usuario } = req.query;
 
   const sql = `
-    SELECT Bodega.ID, Bodega.Nombre, GROUP_CONCAT(Tag.Nombre) AS Tags
+    SELECT Bodega.ID, Bodega.Nombre, GROUP_CONCAT(Tag.Nombre) AS Tags, Bodega.UbicacionNombre, Bodega.UbicacionLatitud, Bodega.UbicacionLongitud
     FROM Bodega
     JOIN Categorisa ON Bodega.ID = Categorisa.Bodega_ID
     JOIN Tag ON Categorisa.Tag_ID = Tag.ID
@@ -98,11 +126,51 @@ app.get("/Obtener_Bodegas", (req, res) => {
   });
 });
 
+app.get("/Obtener_Bodegas_Invitado", (req, res) => {
+  const { Correo_usuario } = req.query;
+
+  if (!Correo_usuario) {
+    return res.status(400).json({ error: "Correo_usuario is required" });
+  }
+
+  const sql = `
+    SELECT 
+      Bodega.ID, 
+      Bodega.Nombre, 
+      GROUP_CONCAT(Tag.Nombre) AS Tags, 
+      Bodega.UbicacionNombre, 
+      Bodega.UbicacionLatitud, 
+      Bodega.UbicacionLongitud,
+      (SELECT Codigo_administrador FROM Usuario WHERE Usuario.ID = Administra.Usuario_ID AND Administra.Tipo = 'Administrador' LIMIT 1) AS Codigo_administrador
+    FROM 
+      Bodega
+    JOIN 
+      Categorisa ON Bodega.ID = Categorisa.Bodega_ID
+    JOIN 
+      Tag ON Categorisa.Tag_ID = Tag.ID
+    JOIN 
+      Administra ON Bodega.ID = Administra.Bodega_ID
+    JOIN 
+      Usuario ON Administra.Usuario_ID = Usuario.ID
+    WHERE 
+      Usuario.Correo = ? AND Administra.Tipo = 'Empleado'
+    GROUP BY 
+      Bodega.Nombre
+  `;
+  pool.query(sql, [Correo_usuario], (err, results) => {
+    if (err) {
+      console.error("Error in the query:", err);
+      return res.status(500).json({ error: "Error in the server" });
+    }
+    res.status(200).json(results);
+  });
+});
+
 app.post("/Crear_bodega", (req, res) => {
-  const { Nombre_bodega, Correo_usuario, Lista_tags } = req.body;
+  const { Nombre_bodega, Correo_usuario, Lista_tags, UbicacionNombre, UbicacionLatitud, UbicacionLongitud } = req.body;
 
   // Verificación de parámetros
-  if (!Nombre_bodega || !Correo_usuario || !Array.isArray(Lista_tags)) {
+  if (!Nombre_bodega || !Correo_usuario || !Array.isArray(Lista_tags) || !UbicacionNombre || UbicacionLatitud == null || UbicacionLongitud == null) {
     return res.status(400).json({ error: "Datos insuficientes o incorrectos" });
   }
 
@@ -117,9 +185,13 @@ app.post("/Crear_bodega", (req, res) => {
     }
 
     const userId = userResults[0].ID;
+  
 
-    const bodegaQuery = `INSERT INTO Bodega (Nombre, Codigo_invitacion) VALUES (?, '1234')`;
-    pool.query(bodegaQuery, [Nombre_bodega], (err, bodegaResults) => {
+    const randomInt1 = getRandomInt(1000000000000, 99999999999999);
+    const randomInt2 = getRandomInt(1000000000000, 99999999999999);
+
+    const bodegaQuery = `INSERT INTO Bodega (Nombre, Codigo_invitacion, Codigo_invitacion_admin , UbicacionNombre, UbicacionLatitud, UbicacionLongitud) VALUES (?,?, ?, ?, ?, ?)`;
+    pool.query(bodegaQuery, [Nombre_bodega, randomInt1 ,randomInt2 ,UbicacionNombre, UbicacionLatitud, UbicacionLongitud], (err, bodegaResults) => {
       if (err) {
         console.error("Error al crear la bodega:", err);
         return res.status(500).json({ error: "Error al crear la bodega" });
@@ -149,6 +221,24 @@ app.post("/Crear_bodega", (req, res) => {
   });
 });
 
+app.get('/Obtener_codigo_invitacion_bodega', (req, res) => {
+  const { Bodega_ID } = req.query;
+
+  if (!Bodega_ID) {
+    return res.status(400).json({ error: "Bodega_ID is required" });
+  }
+  const sql = 'SELECT Codigo_invitacion FROM Bodega WHERE ID = ?';
+  pool.query(sql, [Bodega_ID], (err, results) => {
+    if (err) {
+      console.error("Error in the query:", err);
+      return res.status(500).json({ error: "Error in the server" });
+    }
+    if (results.length === 0) {
+      return res.status(404).json({ error: "Bodega not found" });
+    }
+    res.status(200).json(results[0]);
+  });
+});
 
 app.post("/Crear_tag", (req, res) => {
   const { Nombre_tag, Correo_usuario } = req.body;
@@ -198,6 +288,49 @@ app.get("/Obtener_tags", (req, res) => {
       return res.status(404).json({ error: "No se encontraron tags para este usuario" });
     }
     res.status(200).json(results);
+  });
+});
+
+app.post("/Agregar_Usuario_Invitado", (req, res) => {
+  const { Correo_usuario, Codigo_invitacion } = req.body;
+
+  if (!Correo_usuario || !Codigo_invitacion) {
+    return res.status(400).json({ error: "Correo_usuario y Codigo_invitacion son requeridos" });
+  }
+
+  const usuarioQuery = 'SELECT ID FROM Usuario WHERE Correo = ?';
+  pool.query(usuarioQuery, [Correo_usuario], (err, usuarioResults) => {
+    if (err) {
+      console.error("Error en la consulta del usuario:", err);
+      return res.status(500).json({ error: "Error en el servidor" });
+    }
+    if (usuarioResults.length === 0) {
+      return res.status(404).json({ error: "Usuario no encontrado" });
+    }
+
+    const usuarioId = usuarioResults[0].ID;
+
+    const bodegaQuery = 'SELECT ID FROM Bodega WHERE Codigo_invitacion = ?';
+    pool.query(bodegaQuery, [Codigo_invitacion], (err, bodegaResults) => {
+      if (err) {
+        console.error("Error en la consulta de la bodega:", err);
+        return res.status(500).json({ error: "Error en el servidor" });
+      }
+      if (bodegaResults.length === 0) {
+        return res.status(404).json({ error: "Bodega no encontrada" });
+      }
+
+      const bodegaId = bodegaResults[0].ID;
+
+      const administraQuery = 'INSERT INTO Administra (Tipo, Usuario_ID, Bodega_ID) VALUES (?, ?, ?)';
+      pool.query(administraQuery, ['Empleado', usuarioId, bodegaId], (err) => {
+        if (err) {
+          console.error("Error al asociar la bodega con el usuario:", err);
+          return res.status(500).json({ error: "Error al asociar la bodega con el usuario" });
+        }
+        res.status(200).json({ message: "Usuario añadido como invitado correctamente" });
+      });
+    });
   });
 });
 
