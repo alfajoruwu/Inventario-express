@@ -35,8 +35,8 @@ CREATE TABLE Bodega (
     Codigo_invitacion VARCHAR(50),
     Codigo_invitacion_admin VARCHAR(50),
     UbicacionNombre VARCHAR(255),
-    UbicacionLatitud DECIMAL(20, 20),
-    UbicacionLongitud DECIMAL(20, 20);   
+    UbicacionLatitud DECIMAL(20, 17),
+    UbicacionLongitud DECIMAL(20, 17)
 );
 
 CREATE TABLE Guarda (
@@ -78,12 +78,14 @@ CREATE TABLE Usuario (
 );
 
 CREATE TABLE Administra (
+    ID INT PRIMARY KEY AUTO_INCREMENT,
     Tipo VARCHAR(50),
     Usuario_ID INT,
     Bodega_ID INT
 );
 
 CREATE TABLE Categorisa (
+    ID INT PRIMARY KEY AUTO_INCREMENT,
     Bodega_ID INT,
     Tag_ID INT
 );
@@ -104,10 +106,9 @@ INSERT INTO Producto (Nombre, Descripcion, Imagen, Precio, Codigo) VALUES
 ('Articulo1', 'azul', 'base64', 5000, '1234512'),
 ('Articulo2', 'Verde', 'base64', 10000, '321312');
 
-
-INSERT INTO Bodega (Nombre, Codigo_invitacion,Codigo_invitacion_admin , UbicacionNombre, UbicacionLatitud, UbicacionLongitud) VALUES
-('Bodega1', '1234','4321', 'nombre1', -30.1112, 30.1231),
-('Bodega2', '1235','5321', 'nombre2', 31.1123, 34.12321);
+INSERT INTO Bodega (Nombre, Codigo_invitacion, Codigo_invitacion_admin, UbicacionNombre, UbicacionLatitud, UbicacionLongitud) VALUES
+('Bodega1', '1234', '4321', 'nombre1', -30.1112, 30.1231),
+('Bodega2', '1235', '5321', 'nombre2', 31.1123, 34.12321);
 
 INSERT INTO Guarda (Bodega_ID, Producto_ID) VALUES
 (1, 1),
@@ -138,7 +139,7 @@ INSERT INTO Administra (Tipo, Usuario_ID, Bodega_ID) VALUES
 ('Empleado', 2, 1);
 
 INSERT INTO Categorisa (Bodega_ID, Tag_ID) VALUES
-(1, 2),
+(1, 1),
 (1, 2);
 
 INSERT INTO Tag (Nombre, Usuario) VALUES
