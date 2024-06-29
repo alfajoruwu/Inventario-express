@@ -101,8 +101,6 @@ app.get("/Obtener_Codigo_Administrador", (req, res) => {
 });
 
 
-
-
 // ------------ Bodegas ------------
 
 app.get("/Obtener_Bodegas", (req, res) => {
@@ -134,28 +132,44 @@ app.get("/Obtener_Bodegas_Invitado", (req, res) => {
   }
 
   const sql = `
-    SELECT 
-      Bodega.ID, 
-      Bodega.Nombre, 
-      GROUP_CONCAT(Tag.Nombre) AS Tags, 
-      Bodega.UbicacionNombre, 
-      Bodega.UbicacionLatitud, 
-      Bodega.UbicacionLongitud,
-      (SELECT Codigo_administrador FROM Usuario WHERE Usuario.ID = Administra.Usuario_ID AND Administra.Tipo = 'Administrador' LIMIT 1) AS Codigo_administrador
-    FROM 
-      Bodega
-    JOIN 
-      Categorisa ON Bodega.ID = Categorisa.Bodega_ID
-    JOIN 
-      Tag ON Categorisa.Tag_ID = Tag.ID
-    JOIN 
-      Administra ON Bodega.ID = Administra.Bodega_ID
-    JOIN 
+ SELECT 
+  Bodega.ID, 
+  Bodega.Nombre, 
+  GROUP_CONCAT(Tag.Nombre) AS Tags, 
+  Bodega.UbicacionNombre, 
+  Bodega.UbicacionLatitud, 
+  Bodega.UbicacionLongitud,
+  Admin.Codigo_administrador
+FROM 
+  Bodega
+JOIN 
+  Categorisa ON Bodega.ID = Categorisa.Bodega_ID
+JOIN 
+  Tag ON Categorisa.Tag_ID = Tag.ID
+JOIN 
+  Administra AS Emp ON Bodega.ID = Emp.Bodega_ID
+JOIN 
+  Usuario AS EmpUser ON Emp.Usuario_ID = EmpUser.ID
+LEFT JOIN
+  (SELECT 
+      Bodega_ID,
+      Codigo_administrador
+   FROM 
+      Administra 
+   JOIN 
       Usuario ON Administra.Usuario_ID = Usuario.ID
-    WHERE 
-      Usuario.Correo = ? AND Administra.Tipo = 'Empleado'
-    GROUP BY 
-      Bodega.Nombre
+   WHERE 
+      Administra.Tipo = 'Administrador') AS Admin 
+ON Bodega.ID = Admin.Bodega_ID
+WHERE 
+  EmpUser.Correo = "alfajor@mail.com" AND Emp.Tipo = 'Empleado'
+GROUP BY 
+  Bodega.ID, 
+  Bodega.Nombre, 
+  Admin.Codigo_administrador, 
+  Bodega.UbicacionNombre, 
+  Bodega.UbicacionLatitud, 
+  Bodega.UbicacionLongitud;
   `;
   pool.query(sql, [Correo_usuario], (err, results) => {
     if (err) {
@@ -335,6 +349,7 @@ app.post("/Agregar_Usuario_Invitado", (req, res) => {
 });
 
 // ------------ Productos ------------
+
 app.get('/Obtener_articulos', (req, res) => {
   const { Bodega_ID } = req.query;
 
@@ -443,7 +458,6 @@ app.put('/Editar_Stock', (req, res) => {
       res.status(200).json({ message: 'Stock editado con éxito' });
   });
 });
-
 
 
 
