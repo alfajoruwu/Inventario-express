@@ -226,7 +226,7 @@ app.post("/Crear_bodega", (req, res) => {
         pool.query(tagQuery, [tagValues], (err) => {
           if (err) {
             console.error("Error al asociar etiquetas con la bodega:", err);
-            return res.status(500).json({ error: "Error al asociar etiquetas con la bodega" });
+            return res.status(777).json({  message: "bodega sin tags" });
           }
           res.status(200).json({ message: "Bodega creada y asociada correctamente" });
         });
