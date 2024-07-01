@@ -50,9 +50,11 @@ app.get("/", (req, res) => {
 
 app.post("/Registrar", (req, res) => {
   const { Usuario, Contrasena, Correo } = req.body;
+  const sql = `INSERT INTO Usuario (Nombre, Contrasena, Correo, Codigo_administrador) VALUES (?, ?, ?, ?)`;
 
-  const sql = `INSERT INTO Usuario (Nombre, Contrasena, Correo, Codigo_administrador) VALUES (?, ?, ?, NULL)`;
-  pool.query(sql, [Usuario, Contrasena, Correo], (err, results) => {
+  const codigo = getRandomInt(1000000,9999999)
+
+  pool.query(sql, [Usuario, Contrasena, Correo,codigo], (err, results) => {
 
     if (err) {
       
