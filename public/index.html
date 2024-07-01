@@ -23,55 +23,56 @@
 
     <br/>
 
-    <h2> Usuarios </h2>
+<!--  -------------------------------    Usuarios ------------------------------------------------------------       -->
 
-    <!-- Endpoint: POST /Registrar -->
+    <h2> Usuarios </h2>
+<!-- Endpoint: POST /Registrar ok -->
 <div class="card endpoint-card">
-    <div class="card-header">
-      <h5 class="mb-0">
-        <button class="btn btn-link toggle-details" type="button" data-toggle="collapse" data-target="#registrarEndpointCollapse">
-          <i class="fas fa-angle-down"></i> POST /Registrar
-        </button>
-      </h5>
-    </div>
-    <div id="registrarEndpointCollapse" class="collapse">
-      <div class="card-body">
-        <h5>Descripción</h5>
-        <p>Crea un nuevo usuario en la base de datos.</p>
-        
-        <h5>Parámetros</h5>
-        <ul>
-          <li><strong>Usuario:</strong> Nombre del usuario.</li>
-          <li><strong>Contrasena:</strong> Contraseña del usuario.</li>
-          <li><strong>Correo:</strong> Correo electrónico del usuario.</li>
-        </ul>
-  
-        <h5>Ejemplo de uso</h5>
-        <pre>
-          <code class="language-http">
-  POST /Registrar
-  Content-Type: application/json
-  
-  {
-    "Usuario": "ejemploUsuario",
-    "Contrasena": "ejemplo123",
-    "Correo": "usuario@example.com"
-  }
-          </code>
-        </pre>
-  
-        <h5>Respuestas</h5>
-        <ul>
-          <li>200 OK: Usuario creado exitosamente.</li>
-          <li>401 Unauthorized: Error si el usuario ya existe o hay algún otro problema.</li>
-          <li>500 Internal Server Error: Error interno del servidor.</li>
-        </ul>
-      </div>
+  <div class="card-header">
+    <h5 class="mb-0">
+      <button class="btn btn-link toggle-details" type="button" data-toggle="collapse" data-target="#registrarEndpointCollapse">
+        <i class="fas fa-angle-down"></i> POST /Registrar
+      </button>
+    </h5>
+  </div>
+  <div id="registrarEndpointCollapse" class="collapse">
+    <div class="card-body">
+      <h5>Descripción</h5>
+      <p>Registra un nuevo usuario en la base de datos con el nombre de usuario, contraseña y correo electrónico proporcionados.</p>
+      
+      <h5>Parámetros</h5>
+      <ul>
+        <li><strong>Usuario:</strong> Nombre de usuario.</li>
+        <li><strong>Contrasena:</strong> Contraseña del usuario.</li>
+        <li><strong>Correo:</strong> Correo electrónico del usuario.</li>
+      </ul>
+
+      <h5>Ejemplo de uso</h5>
+      <pre>
+        <code class="language-http">
+POST /Registrar
+Content-Type: application/json
+
+{
+  "Usuario": "nuevoUsuario",
+  "Contrasena": "password123",
+  "Correo": "correo@ejemplo.com"
+}
+        </code>
+      </pre>
+
+      <h5>Respuestas</h5>
+      <ul>
+        <li>200 OK: Si el registro es exitoso. Retorna un mensaje indicando que el usuario ha sido creado.</li>
+        <li>409 Conflict: Si el nombre de usuario ya existe. Retorna un mensaje indicando que el usuario ya existe.</li>
+        <li>500 Internal Server Error: Error interno del servidor.</li>
+      </ul>
     </div>
   </div>
-  
+</div>
 
-  <!-- Endpoint: POST /Login -->
+
+  <!-- Endpoint: POST /Login ok  -->
 <div class="card endpoint-card">
     <div class="card-header">
       <h5 class="mb-0">
@@ -114,92 +115,178 @@
     </div>
   </div>
   
+
+  <!-- Endpoint: GET /Obtener_Codigo_Administrador ok -->
+<div class="card endpoint-card">
+  <div class="card-header">
+    <h5 class="mb-0">
+      <button class="btn btn-link toggle-details" type="button" data-toggle="collapse" data-target="#obtenerCodigoAdministradorEndpointCollapse">
+        <i class="fas fa-angle-down"></i> GET /Obtener_Codigo_Administrador
+      </button>
+    </h5>
+  </div>
+  <div id="obtenerCodigoAdministradorEndpointCollapse" class="collapse">
+    <div class="card-body">
+      <h5>Descripción</h5>
+      <p>Obtiene el código de administrador asociado al correo electrónico proporcionado.</p>
+      
+      <h5>Parámetros</h5>
+      <ul>
+        <li><strong>Correo_usuario:</strong> Correo electrónico del usuario.</li>
+      </ul>
+
+      <h5>Ejemplo de uso</h5>
+      <pre>
+        <code class="language-http">
+GET /Obtener_Codigo_Administrador?Correo_usuario=correo@ejemplo.com
+        </code>
+      </pre>
+
+      <h5>Respuestas</h5>
+      <ul>
+        <li>200 OK: Si la consulta es exitosa. Retorna el código de administrador asociado al correo proporcionado.</li>
+        <li>400 Bad Request: Si no se proporciona el parámetro <code>Correo_usuario</code>. Retorna un mensaje indicando que el parámetro es requerido.</li>
+        <li>404 Not Found: Si no se encuentra un usuario con el correo proporcionado. Retorna un mensaje indicando que el usuario no fue encontrado.</li>
+        <li>500 Internal Server Error: Error interno del servidor.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+
+<!--  -------------------------------    bodegas  ------------------------------------------------------------       -->
+
   <h2> Bodegas </h2>
 
-  <!-- Endpoint: GET /Obtener_Bodegas -->
+
+<!-- Endpoint: GET /Obtener_Bodegas ok -->
 <div class="card endpoint-card">
-    <div class="card-header">
-      <h5 class="mb-0">
-        <button class="btn btn-link toggle-details" type="button" data-toggle="collapse" data-target="#obtenerBodegasEndpointCollapse">
-          <i class="fas fa-angle-down"></i> GET /Obtener_Bodegas
-        </button>
-      </h5>
-    </div>
-    <div id="obtenerBodegasEndpointCollapse" class="collapse">
-      <div class="card-body">
-        <h5>Descripción</h5>
-        <p>Obtiene las bodegas asociadas a un usuario específico junto con las etiquetas asociadas a cada bodega.</p>
-        
-        <h5>Parámetros</h5>
-        <ul>
-          <li><strong>Correo_usuario:</strong> Correo electrónico del usuario cuyas bodegas se quieren obtener.</li>
-        </ul>
-  
-        <h5>Ejemplo de uso</h5>
-        <pre>
-          <code class="language-http">
-  GET /Obtener_Bodegas?Correo_usuario=usuario@example.com
-          </code>
-        </pre>
-  
-        <h5>Respuestas</h5>
-        <ul>
-          <li>200 OK: Retorna un arreglo de objetos donde cada objeto contiene el nombre de la bodega y las etiquetas asociadas.</li>
-          <li>401 Unauthorized: Si el usuario proporcionado no es válido o no tiene acceso.</li>
-          <li>500 Internal Server Error: Error interno del servidor.</li>
-        </ul>
-      </div>
+  <div class="card-header">
+    <h5 class="mb-0">
+      <button class="btn btn-link toggle-details" type="button" data-toggle="collapse" data-target="#obtenerBodegasEndpointCollapse">
+        <i class="fas fa-angle-down"></i> GET /Obtener_Bodegas
+      </button>
+    </h5>
+  </div>
+  <div id="obtenerBodegasEndpointCollapse" class="collapse">
+    <div class="card-body">
+      <h5>Descripción</h5>
+      <p>Obtiene la lista de bodegas administradas por el usuario asociado al correo electrónico proporcionado, incluyendo información sobre ubicación y etiquetas asociadas.</p>
+      
+      <h5>Parámetros</h5>
+      <ul>
+        <li><strong>Correo_usuario:</strong> Correo electrónico del usuario.</li>
+      </ul>
+
+      <h5>Ejemplo de uso</h5>
+      <pre>
+        <code class="language-http">
+GET /Obtener_Bodegas?Correo_usuario=correo@ejemplo.com
+        </code>
+      </pre>
+
+      <h5>Respuestas</h5>
+      <ul>
+        <li>200 OK: Si la consulta es exitosa. Retorna la lista de bodegas administradas por el usuario, incluyendo información de ubicación y etiquetas.</li>
+        <li>401 Unauthorized: Si hay un error en la consulta o si el usuario no tiene permisos. Retorna un mensaje indicando que el usuario es incorrecto.</li>
+        <li>500 Internal Server Error: Error interno del servidor.</li>
+      </ul>
     </div>
   </div>
+</div>
 
   
-  <!-- Endpoint: POST /Crear_bodega -->
+<!-- Endpoint: GET /Obtener_Bodegas_Invitado ok -->
 <div class="card endpoint-card">
-    <div class="card-header">
-      <h5 class="mb-0">
-        <button class="btn btn-link toggle-details" type="button" data-toggle="collapse" data-target="#crearBodegaEndpointCollapse">
-          <i class="fas fa-angle-down"></i> POST /Crear_bodega
-        </button>
-      </h5>
-    </div>
-    <div id="crearBodegaEndpointCollapse" class="collapse">
-      <div class="card-body">
-        <h5>Descripción</h5>
-        <p>Crea una nueva bodega en la base de datos y la asocia al usuario especificado junto con las etiquetas proporcionadas.</p>
-        
-        <h5>Parámetros</h5>
-        <ul>
-          <li><strong>Nombre_bodega:</strong> Nombre de la nueva bodega a crear.</li>
-          <li><strong>Correo_usuario:</strong> Correo electrónico del usuario que será administrador de la bodega.</li>
-          <li><strong>Lista_tags:</strong> Arreglo de IDs de etiquetas que se asociarán a la nueva bodega.</li>
-        </ul>
-  
-        <h5>Ejemplo de uso</h5>
-        <pre>
-          <code class="language-http">
-  POST /Crear_bodega
-  Content-Type: application/json
-  
-  {
-    "Nombre_bodega": "Ejemplo Bodega",
-    "Correo_usuario": "usuario@example.com",
-    "Lista_tags": [1, 2]
-  }
-          </code>
-        </pre>
-  
-        <h5>Respuestas</h5>
-        <ul>
-          <li>200 OK: Bodega creada y asociada correctamente.</li>
-          <li>401 Unauthorized: Si el usuario proporcionado no es válido.</li>
-          <li>500 Internal Server Error: Error interno del servidor al crear la bodega o asociar etiquetas.</li>
-        </ul>
-      </div>
+  <div class="card-header">
+    <h5 class="mb-0">
+      <button class="btn btn-link toggle-details" type="button" data-toggle="collapse" data-target="#obtenerBodegasInvitadoEndpointCollapse">
+        <i class="fas fa-angle-down"></i> GET /Obtener_Bodegas_Invitado
+      </button>
+    </h5>
+  </div>
+  <div id="obtenerBodegasInvitadoEndpointCollapse" class="collapse">
+    <div class="card-body">
+      <h5>Descripción</h5>
+      <p>Obtiene la lista de bodegas donde el usuario invitado trabaja como empleado, incluyendo información sobre ubicación, etiquetas y código de administrador.</p>
+      
+      <h5>Parámetros</h5>
+      <ul>
+        <li><strong>Correo_usuario:</strong> Correo electrónico del usuario invitado.</li>
+      </ul>
+
+      <h5>Ejemplo de uso</h5>
+      <pre>
+        <code class="language-http">
+GET /Obtener_Bodegas_Invitado?Correo_usuario=correo@ejemplo.com
+        </code>
+      </pre>
+
+      <h5>Respuestas</h5>
+      <ul>
+        <li>200 OK: Si la consulta es exitosa. Retorna la lista de bodegas donde el usuario invitado trabaja como empleado, incluyendo información de ubicación, etiquetas y código de administrador si aplica.</li>
+        <li>400 Bad Request: Si no se proporciona el parámetro <code>Correo_usuario</code>. Retorna un mensaje indicando que el parámetro es requerido.</li>
+        <li>500 Internal Server Error: Error interno del servidor.</li>
+      </ul>
     </div>
   </div>
+</div>
+
+
+<!-- Endpoint: POST /Crear_bodega  ok -->
+<div class="card endpoint-card">
+  <div class="card-header">
+    <h5 class="mb-0">
+      <button class="btn btn-link toggle-details" type="button" data-toggle="collapse" data-target="#crearBodegaEndpointCollapse">
+        <i class="fas fa-angle-down"></i> POST /Crear_bodega
+      </button>
+    </h5>
+  </div>
+  <div id="crearBodegaEndpointCollapse" class="collapse">
+    <div class="card-body">
+      <h5>Descripción</h5>
+      <p>Crea una nueva bodega y la asocia con el usuario especificado. También se asocian las etiquetas proporcionadas con la bodega.</p>
+      
+      <h5>Parámetros</h5>
+      <ul>
+        <li><strong>Nombre_bodega:</strong> Nombre de la nueva bodega.</li>
+        <li><strong>Correo_usuario:</strong> Correo electrónico del usuario que administrará la bodega.</li>
+        <li><strong>Lista_tags:</strong> Array de IDs de etiquetas a asociar con la bodega.</li>
+        <li><strong>UbicacionNombre:</strong> Nombre de la ubicación de la bodega.</li>
+        <li><strong>UbicacionLatitud:</strong> Latitud de la ubicación de la bodega.</li>
+        <li><strong>UbicacionLongitud:</strong> Longitud de la ubicación de la bodega.</li>
+      </ul>
+
+      <h5>Ejemplo de uso</h5>
+      <pre>
+        <code class="language-http">
+POST /Crear_bodega
+Content-Type: application/json
+
+{
+  "Nombre_bodega": "Bodega Central",
+  "Correo_usuario": "usuario@ejemplo.com",
+  "Lista_tags": [1, 2, 3],
+  "UbicacionNombre": "Centro de la Ciudad",
+  "UbicacionLatitud": 40.712776,
+  "UbicacionLongitud": -74.005974
+}
+        </code>
+      </pre>
+
+      <h5>Respuestas</h5>
+      <ul>
+        <li>200 OK: Si la bodega se crea y asocia correctamente. Retorna un mensaje indicando que la bodega ha sido creada y asociada correctamente.</li>
+        <li>400 Bad Request: Si faltan parámetros o si los datos proporcionados son incorrectos. Retorna un mensaje indicando que los datos son insuficientes o incorrectos.</li>
+        <li>401 Unauthorized: Si el usuario especificado no existe. Retorna un mensaje indicando que el usuario es incorrecto.</li>
+        <li>500 Internal Server Error: Error interno del servidor en la creación de la bodega o en la asociación de etiquetas.</li>
+      </ul>
+    </div>
+  </div>
+</div>
 
   
-  <!-- Endpoint: POST /Crear_tag -->
+  <!-- Endpoint: POST /Crear_tag ok -->
 <div class="card endpoint-card">
     <div class="card-header">
       <h5 class="mb-0">
@@ -242,7 +329,7 @@
     </div>
   </div>
 
-  <!-- Endpoint: GET /Obtener_tags -->
+  <!-- Endpoint: GET /Obtener_tags ok -->
 <div class="card endpoint-card">
     <div class="card-header">
       <h5 class="mb-0">
@@ -278,230 +365,374 @@
     </div>
   </div>
 
+
+  <!-- Endpoint: GET /Obtener_codigo_invitacion_bodega ok -->
+<div class="card endpoint-card">
+  <div class="card-header">
+    <h5 class="mb-0">
+      <button class="btn btn-link toggle-details" type="button" data-toggle="collapse" data-target="#obtenerCodigoInvitacionBodegaEndpointCollapse">
+        <i class="fas fa-angle-down"></i> GET /Obtener_codigo_invitacion_bodega
+      </button>
+    </h5>
+  </div>
+  <div id="obtenerCodigoInvitacionBodegaEndpointCollapse" class="collapse">
+    <div class="card-body">
+      <h5>Descripción</h5>
+      <p>Obtiene el código de invitación asociado a la bodega especificada por el ID.</p>
+      
+      <h5>Parámetros</h5>
+      <ul>
+        <li><strong>Bodega_ID:</strong> ID de la bodega para la cual se desea obtener el código de invitación.</li>
+      </ul>
+
+      <h5>Ejemplo de uso</h5>
+      <pre>
+        <code class="language-http">
+GET /Obtener_codigo_invitacion_bodega?Bodega_ID=12345
+        </code>
+      </pre>
+
+      <h5>Respuestas</h5>
+      <ul>
+        <li>200 OK: Si la consulta es exitosa. Retorna el código de invitación asociado a la bodega.</li>
+        <li>400 Bad Request: Si no se proporciona el parámetro <code>Bodega_ID</code>. Retorna un mensaje indicando que el parámetro es requerido.</li>
+        <li>404 Not Found: Si no se encuentra una bodega con el ID proporcionado. Retorna un mensaje indicando que la bodega no fue encontrada.</li>
+        <li>500 Internal Server Error: Error interno del servidor.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+
+<!-- Endpoint: POST /Agregar_Usuario_Invitado ok -->
+<div class="card endpoint-card">
+  <div class="card-header">
+    <h5 class="mb-0">
+      <button class="btn btn-link toggle-details" type="button" data-toggle="collapse" data-target="#agregarUsuarioInvitadoEndpointCollapse">
+        <i class="fas fa-angle-down"></i> POST /Agregar_Usuario_Invitado
+      </button>
+    </h5>
+  </div>
+  <div id="agregarUsuarioInvitadoEndpointCollapse" class="collapse">
+    <div class="card-body">
+      <h5>Descripción</h5>
+      <p>Asocia un usuario con una bodega como empleado utilizando el correo electrónico del usuario y el código de invitación de la bodega.</p>
+      
+      <h5>Parámetros</h5>
+      <ul>
+        <li><strong>Correo_usuario:</strong> Correo electrónico del usuario a agregar.</li>
+        <li><strong>Codigo_invitacion:</strong> Código de invitación de la bodega a la cual se desea agregar el usuario.</li>
+      </ul>
+
+      <h5>Ejemplo de uso</h5>
+      <pre>
+        <code class="language-http">
+POST /Agregar_Usuario_Invitado
+Content-Type: application/json
+
+{
+  "Correo_usuario": "usuario@ejemplo.com",
+  "Codigo_invitacion": "1234567890"
+}
+        </code>
+      </pre>
+
+      <h5>Respuestas</h5>
+      <ul>
+        <li>200 OK: Si el usuario es agregado correctamente a la bodega. Retorna un mensaje indicando que el usuario fue añadido como invitado correctamente.</li>
+        <li>400 Bad Request: Si faltan los parámetros <code>Correo_usuario</code> o <code>Codigo_invitacion</code>. Retorna un mensaje indicando que ambos parámetros son requeridos.</li>
+        <li>404 Not Found: Si el usuario o la bodega no son encontrados. Retorna un mensaje indicando que el usuario o la bodega no fueron encontrados.</li>
+        <li>500 Internal Server Error: Error interno del servidor al intentar agregar al usuario o asociarlo con la bodega.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+
+
+  <!--  -------------------------------    Articulos  ------------------------------------------------------------       -->
+
   <h2> Articulos </h2>
   
-<!-- Endpoint: GET /Obtener_articulos -->
+<!-- Endpoint: GET /Obtener_articulos ok -->
 <div class="card endpoint-card">
-    <div class="card-header">
-      <h5 class="mb-0">
-        <button class="btn btn-link toggle-details" type="button" data-toggle="collapse" data-target="#obtenerArticulosEndpointCollapse">
-          <i class="fas fa-angle-down"></i> GET /Obtener_articulos
-        </button>
-      </h5>
-    </div>
-    <div id="obtenerArticulosEndpointCollapse" class="collapse">
-      <div class="card-body">
-        <h5>Descripción</h5>
-        <p>Obtiene los productos almacenados en una bodega específica.</p>
-        
-        <h5>Parámetros</h5>
-        <ul>
-          <li><strong>Bodega_Nombre:</strong> Nombre de la bodega de la cual se desean obtener los productos.</li>
-        </ul>
-  
-        <h5>Ejemplo de uso</h5>
-        <pre>
-          <code class="language-http">
-  GET /Obtener_articulos?Bodega_Nombre=Bodega1
-  Content-Type: application/json
-          </code>
-        </pre>
-  
-        <h5>Respuestas</h5>
-        <ul>
-          <li>200 OK: Lista de productos obtenidos correctamente.</li>
-          <li>500 Internal Server Error: Error interno del servidor al intentar obtener los productos.</li>
-        </ul>
-      </div>
+  <div class="card-header">
+    <h5 class="mb-0">
+      <button class="btn btn-link toggle-details" type="button" data-toggle="collapse" data-target="#obtenerArticulosEndpointCollapse">
+        <i class="fas fa-angle-down"></i> GET /Obtener_articulos
+      </button>
+    </h5>
+  </div>
+  <div id="obtenerArticulosEndpointCollapse" class="collapse">
+    <div class="card-body">
+      <h5>Descripción</h5>
+      <p>Obtiene una lista de artículos disponibles en una bodega específica, incluyendo el stock disponible de cada artículo.</p>
+      
+      <h5>Parámetros</h5>
+      <ul>
+        <li><strong>Bodega_ID:</strong> ID de la bodega para la cual se desean obtener los artículos.</li>
+      </ul>
+
+      <h5>Ejemplo de uso</h5>
+      <pre>
+        <code class="language-http">
+GET /Obtener_articulos?Bodega_ID=12345
+        </code>
+      </pre>
+
+      <h5>Respuestas</h5>
+      <ul>
+        <li>200 OK: Si la consulta es exitosa. Retorna la lista de artículos en la bodega especificada, con información sobre stock disponible y la imagen del producto en formato base64.</li>
+        <li>400 Bad Request: Si falta el parámetro <code>Bodega_ID</code>. Retorna un mensaje indicando que el parámetro es requerido.</li>
+        <li>500 Internal Server Error: Error interno del servidor al intentar obtener los artículos.</li>
+      </ul>
     </div>
   </div>
+</div>
+
 
   
-  <!-- Endpoint: POST /Crear_Producto -->
+<!-- Endpoint: POST /Crear_Producto ok -->
 <div class="card endpoint-card">
-    <div class="card-header">
-      <h5 class="mb-0">
-        <button class="btn btn-link toggle-details" type="button" data-toggle="collapse" data-target="#crearProductoEndpointCollapse">
-          <i class="fas fa-angle-down"></i> POST /Crear_Producto
-        </button>
-      </h5>
-    </div>
-    <div id="crearProductoEndpointCollapse" class="collapse">
-      <div class="card-body">
-        <h5>Descripción</h5>
-        <p>Crea un nuevo producto en la base de datos con los detalles proporcionados.</p>
-        
-        <h5>Parámetros</h5>
-        <ul>
-          <li><strong>Nombre:</strong> Nombre del producto.</li>
-          <li><strong>Descripcion:</strong> Descripción del producto.</li>
-          <li><strong>Imagen:</strong> URL o base64 de la imagen del producto.</li>
-          <li><strong>Precio:</strong> Precio del producto.</li>
-          <li><strong>Codigo:</strong> Código único del producto.</li>
-        </ul>
-  
-        <h5>Ejemplo de uso</h5>
-        <pre>
-          <code class="language-http">
-  POST /Crear_Producto
-  Content-Type: application/json
-  
-  {
-    "Nombre": "Producto1",
-    "Descripcion": "Descripción del producto 1",
-    "Imagen": "https://ejemplo.com/imagen1.jpg",
-    "Precio": 100.50,
-    "Codigo": "ABC123"
-  }
-          </code>
-        </pre>
-  
-        <h5>Respuestas</h5>
-        <ul>
-          <li>200 OK: Producto creado correctamente.</li>
-          <li>500 Internal Server Error: Error interno del servidor al intentar crear el producto.</li>
-        </ul>
-      </div>
+  <div class="card-header">
+    <h5 class="mb-0">
+      <button class="btn btn-link toggle-details" type="button" data-toggle="collapse" data-target="#crearProductoEndpointCollapse">
+        <i class="fas fa-angle-down"></i> POST /Crear_Producto
+      </button>
+    </h5>
+  </div>
+  <div id="crearProductoEndpointCollapse" class="collapse">
+    <div class="card-body">
+      <h5>Descripción</h5>
+      <p>Crea un nuevo producto y lo asocia con una bodega específica. El producto se inserta en la tabla de productos y se realiza la asociación con la bodega indicada.</p>
+      
+      <h5>Parámetros</h5>
+      <ul>
+        <li><strong>Nombre:</strong> Nombre del producto.</li>
+        <li><strong>Descripcion:</strong> Descripción del producto.</li>
+        <li><strong>Imagen:</strong> Imagen del producto en formato base64.</li>
+        <li><strong>Precio:</strong> Precio del producto.</li>
+        <li><strong>Codigo:</strong> Código único del producto.</li>
+        <li><strong>Bodega_ID:</strong> ID de la bodega con la que se debe asociar el producto.</li>
+      </ul>
+
+      <h5>Ejemplo de uso</h5>
+      <pre>
+        <code class="language-http">
+POST /Crear_Producto
+Content-Type: application/json
+
+{
+  "Nombre": "Producto Ejemplo",
+  "Descripcion": "Descripción del producto ejemplo",
+  "Imagen": "data:image/jpeg;base64,...",
+  "Precio": 99.99,
+  "Codigo": "ABC123",
+  "Bodega_ID": 12345
+}
+        </code>
+      </pre>
+
+      <h5>Respuestas</h5>
+      <ul>
+        <li>200 OK: Si el producto se crea y asocia correctamente con la bodega. Retorna un mensaje indicando que el producto fue creado y asociado con éxito.</li>
+        <li>400 Bad Request: Si faltan parámetros necesarios en la solicitud. Retorna un mensaje indicando qué parámetros son necesarios.</li>
+        <li>500 Internal Server Error: Error interno del servidor al intentar crear el producto o asociarlo con la bodega.</li>
+      </ul>
     </div>
   </div>
+</div>
+
+
+<!-- Endpoint: GET /Obtener_Stock ok -->
+<div class="card endpoint-card">
+  <div class="card-header">
+    <h5 class="mb-0">
+      <button class="btn btn-link toggle-details" type="button" data-toggle="collapse" data-target="#obtenerStockEndpointCollapse">
+        <i class="fas fa-angle-down"></i> GET /Obtener_Stock
+      </button>
+    </h5>
+  </div>
+  <div id="obtenerStockEndpointCollapse" class="collapse">
+    <div class="card-body">
+      <h5>Descripción</h5>
+      <p>Obtiene el stock disponible de un producto específico en una bodega determinada. Retorna información sobre los lotes de stock, incluyendo cantidad, fecha de vencimiento y fecha de ingreso.</p>
+      
+      <h5>Parámetros</h5>
+      <ul>
+        <li><strong>Producto_nombre:</strong> Nombre del producto del cual se desea obtener el stock.</li>
+        <li><strong>Bodega_ID:</strong> ID de la bodega donde se consulta el stock.</li>
+      </ul>
+
+      <h5>Ejemplo de uso</h5>
+      <pre>
+        <code class="language-http">
+GET /Obtener_Stock?Producto_nombre=Producto%20Ejemplo&Bodega_ID=12345
+        </code>
+      </pre>
+
+      <h5>Respuestas</h5>
+      <ul>
+        <li>200 OK: Si la consulta es exitosa. Retorna una lista de lotes con información sobre cantidad, fecha de vencimiento y fecha de ingreso del stock del producto en la bodega especificada.</li>
+        <li>400 Bad Request: Si falta algún parámetro necesario en la solicitud. Retorna un mensaje indicando qué parámetros son requeridos.</li>
+        <li>500 Internal Server Error: Error interno del servidor al intentar obtener el stock.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
 
   
-  <!-- Endpoint: GET /Obtener_Stock -->
+<!-- Endpoint: POST /Anadir_Stock ok -->
 <div class="card endpoint-card">
-    <div class="card-header">
-      <h5 class="mb-0">
-        <button class="btn btn-link toggle-details" type="button" data-toggle="collapse" data-target="#obtenerStockEndpointCollapse">
-          <i class="fas fa-angle-down"></i> GET /Obtener_Stock
-        </button>
-      </h5>
-    </div>
-    <div id="obtenerStockEndpointCollapse" class="collapse">
-      <div class="card-body">
-        <h5>Descripción</h5>
-        <p>Obtiene la información de stock de un producto específico en una bodega específica.</p>
-        
-        <h5>Parámetros</h5>
-        <ul>
-          <li><strong>Producto_nombre:</strong> Nombre del producto del cual se desea obtener el stock.</li>
-          <li><strong>Bodega_Nombre:</strong> Nombre de la bodega donde se encuentra el producto.</li>
-        </ul>
-  
-        <h5>Ejemplo de uso</h5>
-        <pre>
-          <code class="language-http">
-  GET /Obtener_Stock?Producto_nombre=Producto1&Bodega_Nombre=Bodega1
-          </code>
-        </pre>
-  
-        <h5>Respuestas</h5>
-        <ul>
-          <li>200 OK: Retorna un arreglo de objetos JSON con los detalles del stock del producto en la bodega.</li>
-          <li>500 Internal Server Error: Error interno del servidor al intentar obtener el stock.</li>
-        </ul>
-      </div>
+  <div class="card-header">
+    <h5 class="mb-0">
+      <button class="btn btn-link toggle-details" type="button" data-toggle="collapse" data-target="#anadirStockEndpointCollapse">
+        <i class="fas fa-angle-down"></i> POST /Anadir_Stock
+      </button>
+    </h5>
+  </div>
+  <div id="anadirStockEndpointCollapse" class="collapse">
+    <div class="card-body">
+      <h5>Descripción</h5>
+      <p>Agrega un nuevo lote de stock a una bodega específica para un producto determinado. Incluye la cantidad del stock, la fecha de vencimiento y la fecha de ingreso.</p>
+      
+      <h5>Parámetros</h5>
+      <ul>
+        <li><strong>Cantidad:</strong> Cantidad de unidades del producto en el lote.</li>
+        <li><strong>Fecha_vencimiento:</strong> Fecha en la que el stock del producto vence.</li>
+        <li><strong>Fecha_ingreso:</strong> Fecha en la que el stock del producto ingresa a la bodega.</li>
+        <li><strong>Producto_nombre:</strong> Nombre del producto al que se le añade el stock.</li>
+        <li><strong>Bodega_ID:</strong> ID de la bodega donde se añade el stock.</li>
+      </ul>
+
+      <h5>Ejemplo de uso</h5>
+      <pre>
+        <code class="language-http">
+POST /Anadir_Stock
+Content-Type: application/json
+
+{
+  "Cantidad": 100,
+  "Fecha_vencimiento": "2024-12-31",
+  "Fecha_ingreso": "2024-06-30",
+  "Producto_nombre": "Producto Ejemplo",
+  "Bodega_ID": 12345
+}
+        </code>
+      </pre>
+
+      <h5>Respuestas</h5>
+      <ul>
+        <li>200 OK: Si el stock se añade correctamente. Retorna un mensaje indicando que el stock fue añadido con éxito.</li>
+        <li>400 Bad Request: Si falta algún parámetro necesario en la solicitud. Retorna un mensaje indicando qué parámetros son requeridos.</li>
+        <li>500 Internal Server Error: Error interno del servidor al intentar añadir el stock.</li>
+      </ul>
     </div>
   </div>
+</div>
+
+
+<!-- Endpoint: PUT /Editar_Stock -->
+<div class="card endpoint-card">
+  <div class="card-header">
+    <h5 class="mb-0">
+      <button class="btn btn-link toggle-details" type="button" data-toggle="collapse" data-target="#editarStockEndpointCollapse">
+        <i class="fas fa-angle-down"></i> PUT /Editar_Stock
+      </button>
+    </h5>
+  </div>
+  <div id="editarStockEndpointCollapse" class="collapse">
+    <div class="card-body">
+      <h5>Descripción</h5>
+      <p>Actualiza la información de un lote de stock existente. Permite modificar la cantidad del stock, la fecha de vencimiento y la fecha de ingreso.</p>
+      
+      <h5>Parámetros</h5>
+      <ul>
+        <li><strong>ID:</strong> ID del lote de stock que se desea editar.</li>
+        <li><strong>Cantidad:</strong> Nueva cantidad de unidades del stock.</li>
+        <li><strong>Fecha_vencimiento:</strong> Nueva fecha de vencimiento del stock.</li>
+        <li><strong>Fecha_ingreso:</strong> Nueva fecha de ingreso del stock en la bodega.</li>
+      </ul>
+
+      <h5>Ejemplo de uso</h5>
+      <pre>
+        <code class="language-http">
+PUT /Editar_Stock
+Content-Type: application/json
+
+{
+  "ID": 1,
+  "Cantidad": 150,
+  "Fecha_vencimiento": "2025-01-31",
+  "Fecha_ingreso": "2024-07-01"
+}
+        </code>
+      </pre>
+
+      <h5>Respuestas</h5>
+      <ul>
+        <li>200 OK: Si el stock se actualiza correctamente. Retorna un mensaje indicando que el stock fue editado con éxito.</li>
+        <li>400 Bad Request: Si falta el parámetro <code>ID</code> o algún otro parámetro necesario. Retorna un mensaje indicando el error.</li>
+        <li>500 Internal Server Error: Error interno del servidor al intentar actualizar el stock.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
 
   
-  <!-- Endpoint: POST /Añadir_Stock -->
+<!-- Endpoint: PUT /Editar_Producto ok -->
 <div class="card endpoint-card">
-    <div class="card-header">
-      <h5 class="mb-0">
-        <button class="btn btn-link toggle-details" type="button" data-toggle="collapse" data-target="#anadirStockEndpointCollapse">
-          <i class="fas fa-angle-down"></i> POST /Añadir_Stock
-        </button>
-      </h5>
-    </div>
-    <div id="anadirStockEndpointCollapse" class="collapse">
-      <div class="card-body">
-        <h5>Descripción</h5>
-        <p>Añade stock de un producto a una bodega específica.</p>
-        
-        <h5>Parámetros</h5>
-        <ul>
-          <li><strong>Cantidad:</strong> Cantidad del producto a añadir al stock.</li>
-          <li><strong>Fecha_vencimiento:</strong> Fecha de vencimiento del lote añadido.</li>
-          <li><strong>Fecha_ingreso:</strong> Fecha de ingreso del lote añadido.</li>
-          <li><strong>Producto_nombre:</strong> Nombre del producto al cual se añadirá el stock.</li>
-          <li><strong>Bodega_Nombre:</strong> Nombre de la bodega donde se añadirá el stock.</li>
-        </ul>
-  
-        <h5>Ejemplo de uso</h5>
-        <pre>
-          <code class="language-http">
-  POST /Añadir_Stock
-  Content-Type: application/json
-  
-  {
-    "Cantidad": 100,
-    "Fecha_vencimiento": "2025-12-31",
-    "Fecha_ingreso": "2024-06-15",
-    "Producto_nombre": "Producto1",
-    "Bodega_Nombre": "Bodega1"
-  }
-          </code>
-        </pre>
-  
-        <h5>Respuestas</h5>
-        <ul>
-          <li>200 OK: Stock añadido correctamente a la bodega.</li>
-          <li>500 Internal Server Error: Error interno del servidor al intentar añadir el stock.</li>
-        </ul>
-      </div>
-    </div>
+  <div class="card-header">
+    <h5 class="mb-0">
+      <button class="btn btn-link toggle-details" type="button" data-toggle="collapse" data-target="#editarProductoEndpointCollapse">
+        <i class="fas fa-angle-down"></i> PUT /Editar_Producto
+      </button>
+    </h5>
   </div>
+  <div id="editarProductoEndpointCollapse" class="collapse">
+    <div class="card-body">
+      <h5>Descripción</h5>
+      <p>Actualiza los detalles de un producto existente en la base de datos utilizando su ID. Permite modificar el nombre, descripción, imagen, precio y código del producto.</p>
+      
+      <h5>Parámetros</h5>
+      <ul>
+        <li><strong>ID:</strong> ID del producto a editar.</li>
+        <li><strong>Nombre:</strong> Nuevo nombre del producto.</li>
+        <li><strong>Descripcion:</strong> Nueva descripción del producto.</li>
+        <li><strong>Imagen:</strong> Nueva imagen del producto en formato base64.</li>
+        <li><strong>Precio:</strong> Nuevo precio del producto.</li>
+        <li><strong>Codigo:</strong> Nuevo código único del producto.</li>
+      </ul>
 
-  
-  <!-- Endpoint: PUT /Editar_Producto -->
-<div class="card endpoint-card">
-    <div class="card-header">
-      <h5 class="mb-0">
-        <button class="btn btn-link toggle-details" type="button" data-toggle="collapse" data-target="#editarProductoEndpointCollapse">
-          <i class="fas fa-angle-down"></i> PUT /Editar_Producto
-        </button>
-      </h5>
-    </div>
-    <div id="editarProductoEndpointCollapse" class="collapse">
-      <div class="card-body">
-        <h5>Descripción</h5>
-        <p>Edita los detalles de un producto existente.</p>
-        
-        <h5>Parámetros</h5>
-        <ul>
-          <li><strong>ID:</strong> ID del producto que se desea editar.</li>
-          <li><strong>Nombre:</strong> Nuevo nombre del producto.</li>
-          <li><strong>Descripcion:</strong> Nueva descripción del producto.</li>
-          <li><strong>Imagen:</strong> Nueva URL de la imagen del producto.</li>
-          <li><strong>Precio:</strong> Nuevo precio del producto.</li>
-          <li><strong>Codigo:</strong> Nuevo código del producto.</li>
-        </ul>
-  
-        <h5>Ejemplo de uso</h5>
-        <pre>
-          <code class="language-http">
-  PUT /Editar_Producto
-  Content-Type: application/json
-  
-  {
-    "ID": 1,
-    "Nombre": "Nuevo Nombre",
-    "Descripcion": "Nueva descripción",
-    "Imagen": "https://ejemplo.com/nueva-imagen.jpg",
-    "Precio": 15000,
-    "Codigo": "987654"
-  }
-          </code>
-        </pre>
-  
-        <h5>Respuestas</h5>
-        <ul>
-          <li>200 OK: Producto editado correctamente.</li>
-          <li>500 Internal Server Error: Error interno del servidor al intentar editar el producto.</li>
-        </ul>
-      </div>
+      <h5>Ejemplo de uso</h5>
+      <pre>
+        <code class="language-http">
+PUT /Editar_Producto
+Content-Type: application/json
+
+{
+  "ID": 1,
+  "Nombre": "Producto Editado",
+  "Descripcion": "Descripción actualizada del producto",
+  "Imagen": "data:image/jpeg;base64,...",
+  "Precio": 79.99,
+  "Codigo": "XYZ789"
+}
+        </code>
+      </pre>
+
+      <h5>Respuestas</h5>
+      <ul>
+        <li>200 OK: Si el producto se actualiza correctamente. Retorna un mensaje indicando que el producto fue editado con éxito.</li>
+        <li>400 Bad Request: Si falta el parámetro <code>ID</code> o algún otro parámetro necesario. Retorna un mensaje indicando el error.</li>
+        <li>500 Internal Server Error: Error interno del servidor al intentar actualizar el producto.</li>
+      </ul>
     </div>
   </div>
-  
+</div>
+
 
 
 
