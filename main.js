@@ -162,7 +162,7 @@ LEFT JOIN
       Administra.Tipo = 'Administrador') AS Admin 
 ON Bodega.ID = Admin.Bodega_ID
 WHERE 
-  EmpUser.Correo = "alfajor@mail.com" AND Emp.Tipo = 'Empleado'
+  EmpUser.Correo = ? AND Emp.Tipo = 'Empleado'
 GROUP BY 
   Bodega.ID, 
   Bodega.Nombre, 
@@ -458,8 +458,6 @@ app.put('/Editar_Stock', (req, res) => {
       res.status(200).json({ message: 'Stock editado con éxito' });
   });
 });
-
-
 
 // ------------- Print del puerto -------------
 app.listen(port, () => {
