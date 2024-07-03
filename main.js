@@ -546,7 +546,7 @@ app.post('/vender', async (req, res) => {
 
 // --------------- estadisticas ----------------
 
-// -------- expirar sin documentar ---------
+// -------- expirar ---------
 
 app.get('/bodega_productos_expirar', async (req, res) => {
   const { bodegaId } = req.query;
@@ -1057,7 +1057,6 @@ app.get("/producto_menos_vendido_fecha", async (req, res) => {
 // ---------- resumen graficos --------
 
 
-//  ok
 app.get("/Stock_en_bodega_espesifica", async (req, res) => {
   const { correoUsuario, bodegaId } = req.query;
 
@@ -1107,8 +1106,6 @@ app.get("/Stock_en_bodega_espesifica", async (req, res) => {
   }
 });
 
-
-// okey
 app.get("/ventas_por_bodega", async (req, res) => {
   const { correoUsuario } = req.query;
 
@@ -1149,8 +1146,6 @@ app.get("/ventas_por_bodega", async (req, res) => {
   }
 });
 
-
-// okey
 app.get("/ventas_producto_espesifico_tiempo", async (req, res) => {
   const { correoUsuario, bodegaId, productoId, startDate, endDate } = req.query;
 
@@ -1204,7 +1199,7 @@ app.get("/ventas_producto_espesifico_tiempo", async (req, res) => {
   }
 });
 
-app.get("/ventas_por_bodega", async (req, res) => {
+app.get("/ventas_por_bodega_fechas", async (req, res) => {
   const { correoUsuario, bodegaId, startDate, endDate } = req.query;
 
   if (!correoUsuario || !bodegaId || !startDate || !endDate) {

@@ -1477,16 +1477,16 @@ GET /ventas_producto_espesifico_tiempo?correoUsuario=juan@mail.com&bodegaId=1&pr
   </div>
 </div>
 
-<!-- Endpoint: GET /ventas_por_bodega -->
+<!-- Endpoint: GET /ventas_por_bodega_fechas -->
 <div class="card endpoint-card">
   <div class="card-header">
     <h5 class="mb-0">
-      <button class="btn btn-link toggle-details" type="button" data-toggle="collapse" data-target="#ventasPorBodegaEndpointCollapse">
-        <i class="fas fa-angle-down"></i> GET /ventas_por_bodega
+      <button class="btn btn-link toggle-details" type="button" data-toggle="collapse" data-target="#ventasPorBodegaFechasEndpointCollapse">
+        <i class="fas fa-angle-down"></i> GET /ventas_por_bodega_fechas
       </button>
     </h5>
   </div>
-  <div id="ventasPorBodegaEndpointCollapse" class="collapse">
+  <div id="ventasPorBodegaFechasEndpointCollapse" class="collapse">
     <div class="card-body">
       <h5>Descripción</h5>
       <p>Obtiene el total de ventas de productos para una bodega específica dentro de un rango de fechas dado. Incluye el nombre del producto y la cantidad total vendida en el rango de fechas.</p>
@@ -1495,14 +1495,14 @@ GET /ventas_producto_espesifico_tiempo?correoUsuario=juan@mail.com&bodegaId=1&pr
       <ul>
         <li><strong>correoUsuario:</strong> Correo electrónico del usuario para verificar la administración de la bodega.</li>
         <li><strong>bodegaId:</strong> Identificador de la bodega para la cual se desean obtener las ventas.</li>
-        <li><strong>startDate:</strong> Fecha de inicio del rango de fechas para filtrar las ventas.</li>
-        <li><strong>endDate:</strong> Fecha de fin del rango de fechas para filtrar las ventas.</li>
+        <li><strong>startDate:</strong> Fecha de inicio del rango de fechas para filtrar las ventas (formato YYYY-MM-DD).</li>
+        <li><strong>endDate:</strong> Fecha de fin del rango de fechas para filtrar las ventas (formato YYYY-MM-DD).</li>
       </ul>
 
       <h5>Ejemplo de Uso</h5>
       <pre>
         <code class="language-http">
-GET /ventas_por_bodega?correoUsuario=juan@mail.com&bodegaId=1&startDate=2024-01-01&endDate=2024-06-30
+GET /ventas_por_bodega_fechas?correoUsuario=juan@mail.com&bodegaId=1&startDate=2024-01-01&endDate=2024-06-30
         </code>
       </pre>
 
