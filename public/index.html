@@ -72,48 +72,59 @@ Content-Type: application/json
 </div>
 
 
-  <!-- Endpoint: POST /Login ok  -->
+<!-- Endpoint: POST /Login -->
 <div class="card endpoint-card">
-    <div class="card-header">
-      <h5 class="mb-0">
-        <button class="btn btn-link toggle-details" type="button" data-toggle="collapse" data-target="#loginEndpointCollapse">
-          <i class="fas fa-angle-down"></i> POST /Login
-        </button>
-      </h5>
-    </div>
-    <div id="loginEndpointCollapse" class="collapse">
-      <div class="card-body">
-        <h5>Descripción</h5>
-        <p>Autentica a un usuario comparando el nombre de usuario y contraseña proporcionados con los registros de la base de datos.</p>
-        
-        <h5>Parámetros</h5>
-        <ul>
-          <li><strong>Usuario:</strong> Nombre de usuario.</li>
-          <li><strong>Contrasena:</strong> Contraseña del usuario.</li>
-        </ul>
-  
-        <h5>Ejemplo de uso</h5>
-        <pre>
-          <code class="language-http">
-  POST /Login
-  Content-Type: application/json
-  
-  {
-    "Usuario": "ejemploUsuario",
-    "Contrasena": "ejemplo123"
-  }
-          </code>
-        </pre>
-  
-        <h5>Respuestas</h5>
-        <ul>
-          <li>200 OK: Si la autenticación es exitosa. Retorna el nombre de usuario y la contraseña.</li>
-          <li>401 Unauthorized: Si las credenciales proporcionadas son incorrectas o el usuario no existe.</li>
-          <li>500 Internal Server Error: Error interno del servidor.</li>
-        </ul>
-      </div>
+  <div class="card-header">
+    <h5 class="mb-0">
+      <button class="btn btn-link toggle-details" type="button" data-toggle="collapse" data-target="#loginEndpointCollapse">
+        <i class="fas fa-angle-down"></i> POST /Login
+      </button>
+    </h5>
+  </div>
+  <div id="loginEndpointCollapse" class="collapse">
+    <div class="card-body">
+      <h5>Descripción</h5>
+      <p>Autentica a un usuario verificando su correo y contraseña. Retorna los detalles del usuario si la autenticación es exitosa.</p>
+
+      <h5>Parámetros</h5>
+      <ul>
+        <li><strong>Correo:</strong> Correo electrónico del usuario (en el cuerpo de la solicitud).</li>
+        <li><strong>Contrasena:</strong> Contraseña del usuario (en el cuerpo de la solicitud).</li>
+      </ul>
+
+      <h5>Ejemplo de Uso</h5>
+      <pre>
+        <code class="language-http">
+POST /Login
+Content-Type: application/json
+
+{
+  "Correo": "juan@mail.com",
+  "Contrasena": "1234"
+}
+        </code>
+      </pre>
+
+      <h5>Respuesta Exitosa (200 OK)</h5>
+      <pre>
+        <code class="language-json">
+{
+  "Usuario": "juan@mail.com",
+  "Contrasena": "1234"
+}
+        </code>
+      </pre>
+
+      <h5>Respuestas</h5>
+      <ul>
+        <li><strong>200 OK:</strong> Retorna los detalles del usuario si la autenticación es exitosa.</li>
+        <li><strong>401 Unauthorized:</strong> Retorna un error si las credenciales proporcionadas son incorrectas.</li>
+        <li><strong>500 Internal Server Error:</strong> Retorna un error si ocurre un problema al procesar la solicitud.</li>
+      </ul>
     </div>
   </div>
+</div>
+
   
 
   <!-- Endpoint: GET /Obtener_Codigo_Administrador ok -->
