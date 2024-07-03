@@ -734,6 +734,809 @@ Content-Type: application/json
 </div>
 
 
+<!-- -----------------   Venta -------------------------------->
+
+<h2> Venta </h2>
+
+
+<!-- Endpoint: POST /vender -->
+<div class="card endpoint-card">
+  <div class="card-header">
+    <h5 class="mb-0">
+      <button class="btn btn-link toggle-details" type="button" data-toggle="collapse" data-target="#venderEndpointCollapse">
+        <i class="fas fa-angle-down"></i> POST /vender
+      </button>
+    </h5>
+  </div>
+  <div id="venderEndpointCollapse" class="collapse">
+    <div class="card-body">
+      <h5>Descripción</h5>
+      <p>Realiza una venta de productos desde una bodega específica, registrando los detalles de la venta en la base de datos. El proceso incluye:</p>
+      <ul>
+        <li>Creación de un registro de boleta para la venta.</li>
+        <li>Actualización del stock de productos en la bodega según la cantidad vendida.</li>
+        <li>Registro de cada compra y sus detalles en la boleta.</li>
+      </ul>
+      
+      <h5>Parámetros</h5>
+      <ul>
+        <li><strong>clienteId:</strong> ID del cliente que realiza la compra.</li>
+        <li><strong>items:</strong> Array de objetos que contiene los siguientes campos:
+          <ul>
+            <li><strong>productoId:</strong> ID del producto a vender.</li>
+            <li><strong>cantidad:</strong> Cantidad del producto a vender.</li>
+          </ul>
+        </li>
+        <li><strong>correoUsuario:</strong> Correo electrónico del usuario que realiza la venta. Este parámetro se usa para obtener el <code>Usuario_ID</code>.</li>
+        <li><strong>bodegaId:</strong> ID de la bodega desde la cual se realiza la venta.</li>
+      </ul>
+
+      <h5>Ejemplo de Uso</h5>
+      <pre>
+        <code class="language-http">
+POST /vender
+Content-Type: application/json
+
+{
+  "clienteId": 1,
+  "items": [
+    {"productoId": 1, "cantidad": 3},
+    {"productoId": 2, "cantidad": 1}
+  ],
+  "correoUsuario": "juan@mail.com",
+  "bodegaId": 2
+}
+        </code>
+      </pre>
+
+      <h5>Respuestas</h5>
+      <ul>
+        <li><strong>200 OK:</strong> Si la venta se realiza correctamente. Retorna un mensaje indicando que la venta se completó exitosamente junto con el ID de la boleta generada.</li>
+        <li><strong>400 Bad Request:</strong> Si no hay suficiente stock para uno de los productos especificados en <code>items</code> en la bodega especificada. Retorna un mensaje indicando el problema específico.</li>
+        <li><strong>500 Internal Server Error:</strong> Error interno del servidor. Retorna un mensaje indicando el error.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+
+<!-- -----------------  Estadisticas -------------------------------->
+
+<h2> Estadisticas expiracion </h2>
+
+<!-- Endpoint: GET /bodega_productos_expirar -->
+<div class="card endpoint-card">
+  <div class="card-header">
+    <h5 class="mb-0">
+      <button class="btn btn-link toggle-details" type="button" data-toggle="collapse" data-target="#bodegaProductosExpirarEndpointCollapse">
+        <i class="fas fa-angle-down"></i> GET /bodega_productos_expirar
+      </button>
+    </h5>
+  </div>
+  <div id="bodegaProductosExpirarEndpointCollapse" class="collapse">
+    <div class="card-body">
+      <h5>Descripción</h5>
+      <p>Obtiene una lista de productos que están próximos a vencer en una bodega específica. Los productos se ordenan por la fecha de vencimiento de manera ascendente.</p>
+      
+      <h5>Parámetros</h5>
+      <ul>
+        <li><strong>bodegaId:</strong> ID de la bodega para la cual se desea obtener la lista de productos próximos a vencer.</li>
+      </ul>
+
+      <h5>Ejemplo de Uso</h5>
+      <pre>
+        <code class="language-http">
+GET /bodega_productos_expirar?bodegaId=1
+        </code>
+      </pre>
+
+      <h5>Respuesta Exitosa (200 OK)</h5>
+      <pre>
+        <code class="language-json">
+[
+  {
+    "Nombre": "Articulo1",
+    "Fecha_de_vencimiento": "2024-09-06"
+  },
+  {
+    "Nombre": "Articulo2",
+    "Fecha_de_vencimiento": "2024-10-15"
+  }
+]
+        </code>
+      </pre>
+
+      <h5>Respuestas</h5>
+      <ul>
+        <li><strong>200 OK:</strong> Retorna una lista de productos en la bodega especificada, ordenada por la fecha de vencimiento en orden ascendente.</li>
+        <li><strong>400 Bad Request:</strong> Retorna un error si el parámetro <code>bodegaId</code> no está proporcionado.</li>
+        <li><strong>500 Internal Server Error:</strong> Retorna un error si ocurre un problema al procesar la solicitud.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- Endpoint: GET /expirar_por_producto_bodega -->
+<div class="card endpoint-card">
+  <div class="card-header">
+    <h5 class="mb-0">
+      <button class="btn btn-link toggle-details" type="button" data-toggle="collapse" data-target="#expirarPorProductoBodegaEndpointCollapse">
+        <i class="fas fa-angle-down"></i> GET /expirar_por_producto_bodega
+      </button>
+    </h5>
+  </div>
+  <div id="expirarPorProductoBodegaEndpointCollapse" class="collapse">
+    <div class="card-body">
+      <h5>Descripción</h5>
+      <p>Obtiene una lista de lotes para un producto específico en una bodega, ordenados por la cantidad de días restantes hasta la fecha de vencimiento. Incluye detalles como la fecha de obtención, la fecha de vencimiento, la cantidad restante y los días restantes.</p>
+      
+      <h5>Parámetros</h5>
+      <ul>
+        <li><strong>productId:</strong> ID del producto para el cual se desean obtener los lotes.</li>
+        <li><strong>bodegaId:</strong> ID de la bodega en la cual se encuentran los lotes del producto.</li>
+      </ul>
+
+      <h5>Ejemplo de Uso</h5>
+      <pre>
+        <code class="language-http">
+GET /expirar_por_producto_bodega?productId=1&bodegaId=1
+        </code>
+      </pre>
+
+      <h5>Respuesta Exitosa (200 OK)</h5>
+      <pre>
+        <code class="language-json">
+[
+  {
+    "Batch_ID": 1,
+    "Date_Obtained": "2024-06-14",
+    "Expiration_Date": "2024-09-06",
+    "Days_Remaining": 64,
+    "Remaining_Quantity": 32
+  },
+  {
+    "Batch_ID": 2,
+    "Date_Obtained": "2021-01-01",
+    "Expiration_Date": "2030-11-11",
+    "Days_Remaining": 2390,
+    "Remaining_Quantity": 13
+  }
+]
+        </code>
+      </pre>
+
+      <h5>Respuestas</h5>
+      <ul>
+        <li><strong>200 OK:</strong> Retorna una lista de lotes para el producto en la bodega especificada, ordenada por los días restantes hasta la fecha de vencimiento en orden ascendente.</li>
+        <li><strong>400 Bad Request:</strong> Retorna un error si los parámetros <code>productId</code> o <code>bodegaId</code> no están proporcionados.</li>
+        <li><strong>500 Internal Server Error:</strong> Retorna un error si ocurre un problema al procesar la solicitud.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<h2> Resumenes generales </h2>
+
+<!-- Endpoint: GET /producto_mas_vendido -->
+<div class="card endpoint-card">
+  <div class="card-header">
+    <h5 class="mb-0">
+      <button class="btn btn-link toggle-details" type="button" data-toggle="collapse" data-target="#productoMasVendidoEndpointCollapse">
+        <i class="fas fa-angle-down"></i> GET /producto_mas_vendido
+      </button>
+    </h5>
+  </div>
+  <div id="productoMasVendidoEndpointCollapse" class="collapse">
+    <div class="card-body">
+      <h5>Descripción</h5>
+      <p>Obtiene el producto más vendido en las bodegas administradas por el usuario especificado.</p>
+      
+      <h5>Parámetros</h5>
+      <ul>
+        <li><strong>correoUsuario:</strong> Correo electrónico del usuario cuya bodega se desea consultar.</li>
+      </ul>
+
+      <h5>Ejemplo de Uso</h5>
+      <pre>
+        <code class="language-http">
+GET /producto_mas_vendido?correoUsuario=juan@mail.com
+        </code>
+      </pre>
+
+      <h5>Respuesta Exitosa (200 OK)</h5>
+      <pre>
+        <code class="language-json">
+{
+  "ProductName": "Articulo1",
+  "TotalSold": 15
+}
+        </code>
+      </pre>
+
+      <h5>Respuestas</h5>
+      <ul>
+        <li><strong>200 OK:</strong> Retorna el producto más vendido en las bodegas administradas por el usuario, junto con la cantidad total vendida.</li>
+        <li><strong>400 Bad Request:</strong> Retorna un error si el parámetro <code>correoUsuario</code> no está proporcionado.</li>
+        <li><strong>404 Not Found:</strong> Retorna un error si el usuario no se encuentra o si no hay bodegas asociadas al usuario, o si no hay productos vendidos.</li>
+        <li><strong>500 Internal Server Error:</strong> Retorna un error si ocurre un problema al procesar la solicitud.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- Endpoint: GET /bodega_mas_activa -->
+<div class="card endpoint-card">
+  <div class="card-header">
+    <h5 class="mb-0">
+      <button class="btn btn-link toggle-details" type="button" data-toggle="collapse" data-target="#bodegaMasActivaEndpointCollapse">
+        <i class="fas fa-angle-down"></i> GET /bodega_mas_activa
+      </button>
+    </h5>
+  </div>
+  <div id="bodegaMasActivaEndpointCollapse" class="collapse">
+    <div class="card-body">
+      <h5>Descripción</h5>
+      <p>Obtiene la bodega más activa en función de la cantidad total de ventas, para las bodegas administradas por el usuario especificado.</p>
+      
+      <h5>Parámetros</h5>
+      <ul>
+        <li><strong>correoUsuario:</strong> Correo electrónico del usuario cuya bodega se desea consultar.</li>
+      </ul>
+
+      <h5>Ejemplo de Uso</h5>
+      <pre>
+        <code class="language-http">
+GET /bodega_mas_activa?correoUsuario=juan@mail.com
+        </code>
+      </pre>
+
+      <h5>Respuesta Exitosa (200 OK)</h5>
+      <pre>
+        <code class="language-json">
+{
+  "WineryName": "Bodega1",
+  "TotalSold": 150
+}
+        </code>
+      </pre>
+
+      <h5>Respuestas</h5>
+      <ul>
+        <li><strong>200 OK:</strong> Retorna la bodega más activa en función de la cantidad total vendida.</li>
+        <li><strong>400 Bad Request:</strong> Retorna un error si el parámetro <code>correoUsuario</code> no está proporcionado.</li>
+        <li><strong>404 Not Found:</strong> Retorna un error si el usuario no se encuentra, si no hay bodegas asociadas al usuario, o si no se encontraron bodegas con ventas.</li>
+        <li><strong>500 Internal Server Error:</strong> Retorna un error si ocurre un problema al procesar la solicitud.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+
+<!-- Endpoint: GET /vendedor_mas_activo -->
+<div class="card endpoint-card">
+  <div class="card-header">
+    <h5 class="mb-0">
+      <button class="btn btn-link toggle-details" type="button" data-toggle="collapse" data-target="#vendedorMasActivoEndpointCollapse">
+        <i class="fas fa-angle-down"></i> GET /vendedor_mas_activo
+      </button>
+    </h5>
+  </div>
+  <div id="vendedorMasActivoEndpointCollapse" class="collapse">
+    <div class="card-body">
+      <h5>Descripción</h5>
+      <p>Obtiene el vendedor más activo en función de la cantidad total de ventas, para las bodegas administradas por el usuario especificado.</p>
+      
+      <h5>Parámetros</h5>
+      <ul>
+        <li><strong>correoUsuario:</strong> Correo electrónico del usuario cuya actividad de venta se desea consultar.</li>
+      </ul>
+
+      <h5>Ejemplo de Uso</h5>
+      <pre>
+        <code class="language-http">
+GET /vendedor_mas_activo?correoUsuario=juan@mail.com
+        </code>
+      </pre>
+
+      <h5>Respuesta Exitosa (200 OK)</h5>
+      <pre>
+        <code class="language-json">
+{
+  "SellerName": "Pedro",
+  "TotalSold": 150
+}
+        </code>
+      </pre>
+
+      <h5>Respuestas</h5>
+      <ul>
+        <li><strong>200 OK:</strong> Retorna el vendedor más activo en función de la cantidad total vendida.</li>
+        <li><strong>400 Bad Request:</strong> Retorna un error si el parámetro <code>correoUsuario</code> no está proporcionado.</li>
+        <li><strong>404 Not Found:</strong> Retorna un error si el usuario no se encuentra, si no hay bodegas asociadas al usuario, o si no se encontraron vendedores con ventas.</li>
+        <li><strong>500 Internal Server Error:</strong> Retorna un error si ocurre un problema al procesar la solicitud.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- Endpoint: GET /producto_menos_vendido -->
+<div class="card endpoint-card">
+  <div class="card-header">
+    <h5 class="mb-0">
+      <button class="btn btn-link toggle-details" type="button" data-toggle="collapse" data-target="#productoMenosVendidoEndpointCollapse">
+        <i class="fas fa-angle-down"></i> GET /producto_menos_vendido
+      </button>
+    </h5>
+  </div>
+  <div id="productoMenosVendidoEndpointCollapse" class="collapse">
+    <div class="card-body">
+      <h5>Descripción</h5>
+      <p>Obtiene el producto menos vendido en función de la cantidad total de ventas, para las bodegas administradas por el usuario especificado.</p>
+      
+      <h5>Parámetros</h5>
+      <ul>
+        <li><strong>correoUsuario:</strong> Correo electrónico del usuario cuya actividad de venta se desea consultar.</li>
+      </ul>
+
+      <h5>Ejemplo de Uso</h5>
+      <pre>
+        <code class="language-http">
+GET /producto_menos_vendido?correoUsuario=juan@mail.com
+        </code>
+      </pre>
+
+      <h5>Respuesta Exitosa (200 OK)</h5>
+      <pre>
+        <code class="language-json">
+{
+  "ProductName": "ArticulosX",
+  "TotalSold": 5
+}
+        </code>
+      </pre>
+
+      <h5>Respuestas</h5>
+      <ul>
+        <li><strong>200 OK:</strong> Retorna el producto menos vendido en función de la cantidad total vendida.</li>
+        <li><strong>400 Bad Request:</strong> Retorna un error si el parámetro <code>correoUsuario</code> no está proporcionado.</li>
+        <li><strong>404 Not Found:</strong> Retorna un error si el usuario no se encuentra, si no hay bodegas asociadas al usuario, o si no se encontraron productos con ventas.</li>
+        <li><strong>500 Internal Server Error:</strong> Retorna un error si ocurre un problema al procesar la solicitud.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<h2> Resumenes por fecha </h2>
+
+<!-- Endpoint: GET /producto_mas_vendido_fecha -->
+<div class="card endpoint-card">
+  <div class="card-header">
+    <h5 class="mb-0">
+      <button class="btn btn-link toggle-details" type="button" data-toggle="collapse" data-target="#productoMasVendidoFechaEndpointCollapse">
+        <i class="fas fa-angle-down"></i> GET /producto_mas_vendido_fecha
+      </button>
+    </h5>
+  </div>
+  <div id="productoMasVendidoFechaEndpointCollapse" class="collapse">
+    <div class="card-body">
+      <h5>Descripción</h5>
+      <p>Obtiene el producto más vendido en las bodegas administradas por el usuario especificado, dentro del rango de fechas proporcionado.</p>
+      
+      <h5>Parámetros</h5>
+      <ul>
+        <li><strong>correoUsuario:</strong> Correo electrónico del usuario cuya actividad de venta se desea consultar.</li>
+        <li><strong>startDate:</strong> Fecha de inicio del rango para la consulta (en formato YYYY-MM-DD).</li>
+        <li><strong>endDate:</strong> Fecha de fin del rango para la consulta (en formato YYYY-MM-DD).</li>
+      </ul>
+
+      <h5>Ejemplo de Uso</h5>
+      <pre>
+        <code class="language-http">
+GET /producto_mas_vendido_fecha?correoUsuario=juan@mail.com&startDate=2024-01-01&endDate=2024-06-30
+        </code>
+      </pre>
+
+      <h5>Respuesta Exitosa (200 OK)</h5>
+      <pre>
+        <code class="language-json">
+{
+  "ProductName": "Producto A",
+  "TotalSold": 150
+}
+        </code>
+      </pre>
+
+      <h5>Respuestas</h5>
+      <ul>
+        <li><strong>200 OK:</strong> Retorna el producto más vendido dentro del rango de fechas especificado.</li>
+        <li><strong>400 Bad Request:</strong> Retorna un error si alguno de los parámetros <code>correoUsuario</code>, <code>startDate</code> o <code>endDate</code> no está proporcionado.</li>
+        <li><strong>404 Not Found:</strong> Retorna un error si el usuario no se encuentra, si no hay bodegas asociadas al usuario, o si no se encontraron productos vendidos dentro del rango de fechas.</li>
+        <li><strong>500 Internal Server Error:</strong> Retorna un error si ocurre un problema al procesar la solicitud.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- Endpoint: GET /bodega_mas_activa_fecha -->
+<div class="card endpoint-card">
+  <div class="card-header">
+    <h5 class="mb-0">
+      <button class="btn btn-link toggle-details" type="button" data-toggle="collapse" data-target="#bodegaMasActivaFechaEndpointCollapse">
+        <i class="fas fa-angle-down"></i> GET /bodega_mas_activa_fecha
+      </button>
+    </h5>
+  </div>
+  <div id="bodegaMasActivaFechaEndpointCollapse" class="collapse">
+    <div class="card-body">
+      <h5>Descripción</h5>
+      <p>Obtiene la bodega más activa en función de la cantidad total vendida dentro del rango de fechas proporcionado. Se considera solo las bodegas administradas por el usuario especificado.</p>
+      
+      <h5>Parámetros</h5>
+      <ul>
+        <li><strong>correoUsuario:</strong> Correo electrónico del usuario cuya actividad de venta se desea consultar.</li>
+        <li><strong>startDate:</strong> Fecha de inicio del rango para la consulta (en formato YYYY-MM-DD).</li>
+        <li><strong>endDate:</strong> Fecha de fin del rango para la consulta (en formato YYYY-MM-DD).</li>
+      </ul>
+
+      <h5>Ejemplo de Uso</h5>
+      <pre>
+        <code class="language-http">
+GET /bodega_mas_activa_fecha?correoUsuario=juan@mail.com&startDate=2024-01-01&endDate=2024-06-30
+        </code>
+      </pre>
+
+      <h5>Respuesta Exitosa (200 OK)</h5>
+      <pre>
+        <code class="language-json">
+{
+  "WineryName": "Bodega XYZ",
+  "TotalSold": 500
+}
+        </code>
+      </pre>
+
+      <h5>Respuestas</h5>
+      <ul>
+        <li><strong>200 OK:</strong> Retorna la bodega más activa dentro del rango de fechas especificado, basada en la cantidad total vendida.</li>
+        <li><strong>400 Bad Request:</strong> Retorna un error si alguno de los parámetros <code>correoUsuario</code>, <code>startDate</code> o <code>endDate</code> no está proporcionado.</li>
+        <li><strong>404 Not Found:</strong> Retorna un error si el usuario no se encuentra, si no hay bodegas asociadas al usuario, o si no se encontraron bodegas activas dentro del rango de fechas.</li>
+        <li><strong>500 Internal Server Error:</strong> Retorna un error si ocurre un problema al procesar la solicitud.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- Endpoint: GET /vendedor_mas_activo_fecha -->
+<div class="card endpoint-card">
+  <div class="card-header">
+    <h5 class="mb-0">
+      <button class="btn btn-link toggle-details" type="button" data-toggle="collapse" data-target="#vendedorMasActivoFechaEndpointCollapse">
+        <i class="fas fa-angle-down"></i> GET /vendedor_mas_activo_fecha
+      </button>
+    </h5>
+  </div>
+  <div id="vendedorMasActivoFechaEndpointCollapse" class="collapse">
+    <div class="card-body">
+      <h5>Descripción</h5>
+      <p>Obtiene el vendedor más activo en función de la cantidad total vendida dentro del rango de fechas proporcionado. Solo se consideran las bodegas administradas por el usuario especificado.</p>
+      
+      <h5>Parámetros</h5>
+      <ul>
+        <li><strong>correoUsuario:</strong> Correo electrónico del usuario cuya actividad de venta se desea consultar.</li>
+        <li><strong>startDate:</strong> Fecha de inicio del rango para la consulta (en formato YYYY-MM-DD).</li>
+        <li><strong>endDate:</strong> Fecha de fin del rango para la consulta (en formato YYYY-MM-DD).</li>
+      </ul>
+
+      <h5>Ejemplo de Uso</h5>
+      <pre>
+        <code class="language-http">
+GET /vendedor_mas_activo_fecha?correoUsuario=juan@mail.com&startDate=2024-01-01&endDate=2024-06-30
+        </code>
+      </pre>
+
+      <h5>Respuesta Exitosa (200 OK)</h5>
+      <pre>
+        <code class="language-json">
+{
+  "SellerName": "Carlos Pérez",
+  "TotalSold": 350
+}
+        </code>
+      </pre>
+
+      <h5>Respuestas</h5>
+      <ul>
+        <li><strong>200 OK:</strong> Retorna el vendedor más activo dentro del rango de fechas especificado, basado en la cantidad total vendida.</li>
+        <li><strong>400 Bad Request:</strong> Retorna un error si alguno de los parámetros <code>correoUsuario</code>, <code>startDate</code> o <code>endDate</code> no está proporcionado.</li>
+        <li><strong>404 Not Found:</strong> Retorna un error si el usuario no se encuentra, si no hay bodegas asociadas al usuario, o si no se encontraron vendedores activos dentro del rango de fechas.</li>
+        <li><strong>500 Internal Server Error:</strong> Retorna un error si ocurre un problema al procesar la solicitud.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- Endpoint: GET /producto_menos_vendido_fecha -->
+<div class="card endpoint-card">
+  <div class="card-header">
+    <h5 class="mb-0">
+      <button class="btn btn-link toggle-details" type="button" data-toggle="collapse" data-target="#productoMenosVendidoFechaEndpointCollapse">
+        <i class="fas fa-angle-down"></i> GET /producto_menos_vendido_fecha
+      </button>
+    </h5>
+  </div>
+  <div id="productoMenosVendidoFechaEndpointCollapse" class="collapse">
+    <div class="card-body">
+      <h5>Descripción</h5>
+      <p>Obtiene el producto menos vendido en las bodegas administradas por el usuario especificado dentro del rango de fechas proporcionado. Se consideran solo las compras realizadas dentro del rango de fechas.</p>
+      
+      <h5>Parámetros</h5>
+      <ul>
+        <li><strong>correoUsuario:</strong> Correo electrónico del usuario cuya actividad de ventas se desea consultar.</li>
+        <li><strong>startDate:</strong> Fecha de inicio del rango para la consulta (en formato YYYY-MM-DD).</li>
+        <li><strong>endDate:</strong> Fecha de fin del rango para la consulta (en formato YYYY-MM-DD).</li>
+      </ul>
+
+      <h5>Ejemplo de Uso</h5>
+      <pre>
+        <code class="language-http">
+GET /producto_menos_vendido_fecha?correoUsuario=juan@mail.com&startDate=2024-01-01&endDate=2024-06-30
+        </code>
+      </pre>
+
+      <h5>Respuesta Exitosa (200 OK)</h5>
+      <pre>
+        <code class="language-json">
+{
+  "ProductName": "Producto X",
+  "TotalSold": 5
+}
+        </code>
+      </pre>
+
+      <h5>Respuestas</h5>
+      <ul>
+        <li><strong>200 OK:</strong> Retorna el producto menos vendido dentro del rango de fechas especificado, basado en la cantidad total vendida.</li>
+        <li><strong>400 Bad Request:</strong> Retorna un error si alguno de los parámetros <code>correoUsuario</code>, <code>startDate</code> o <code>endDate</code> no está proporcionado.</li>
+        <li><strong>404 Not Found:</strong> Retorna un error si el usuario no se encuentra, si no hay bodegas asociadas al usuario, o si no se encontraron productos dentro del rango de fechas.</li>
+        <li><strong>500 Internal Server Error:</strong> Retorna un error si ocurre un problema al procesar la solicitud.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+
+<h2> Graficos </h2>
+
+<!-- Endpoint: GET /Stock_en_bodega_espesifica -->
+<div class="card endpoint-card">
+  <div class="card-header">
+    <h5 class="mb-0">
+      <button class="btn btn-link toggle-details" type="button" data-toggle="collapse" data-target="#stockEnBodegaEspecificaEndpointCollapse">
+        <i class="fas fa-angle-down"></i> GET /Stock_en_bodega_espesifica
+      </button>
+    </h5>
+  </div>
+  <div id="stockEnBodegaEspecificaEndpointCollapse" class="collapse">
+    <div class="card-body">
+      <h5>Descripción</h5>
+      <p>Obtiene el stock actual de todos los productos en una bodega específica administrada por el usuario indicado. La información se obtiene de los productos que están almacenados en la bodega.</p>
+
+      <h5>Parámetros</h5>
+      <ul>
+        <li><strong>correoUsuario:</strong> Correo electrónico del usuario cuya bodega se desea consultar.</li>
+        <li><strong>bodegaId:</strong> Identificador de la bodega para la cual se desea obtener el stock.</li>
+      </ul>
+
+      <h5>Ejemplo de Uso</h5>
+      <pre>
+        <code class="language-http">
+GET /Stock_en_bodega_espesifica?correoUsuario=juan@mail.com&bodegaId=1
+        </code>
+      </pre>
+
+      <h5>Respuesta Exitosa (200 OK)</h5>
+      <pre>
+        <code class="language-json">
+[
+  {
+    "ProductName": "Producto A",
+    "Stock": 50
+  },
+  {
+    "ProductName": "Producto B",
+    "Stock": 30
+  }
+]
+        </code>
+      </pre>
+
+      <h5>Respuestas</h5>
+      <ul>
+        <li><strong>200 OK:</strong> Retorna el stock actual de todos los productos en la bodega especificada, incluyendo el nombre del producto y la cantidad disponible.</li>
+        <li><strong>400 Bad Request:</strong> Retorna un error si alguno de los parámetros <code>correoUsuario</code> o <code>bodegaId</code> no está proporcionado.</li>
+        <li><strong>403 Forbidden:</strong> Retorna un error si el usuario no administra la bodega especificada.</li>
+        <li><strong>404 Not Found:</strong> Retorna un error si el usuario no se encuentra en la base de datos.</li>
+        <li><strong>500 Internal Server Error:</strong> Retorna un error si ocurre un problema al procesar la solicitud.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- Endpoint: GET /ventas_por_bodega -->
+<div class="card endpoint-card">
+  <div class="card-header">
+    <h5 class="mb-0">
+      <button class="btn btn-link toggle-details" type="button" data-toggle="collapse" data-target="#ventasPorBodegaEndpointCollapse">
+        <i class="fas fa-angle-down"></i> GET /ventas_por_bodega
+      </button>
+    </h5>
+  </div>
+  <div id="ventasPorBodegaEndpointCollapse" class="collapse">
+    <div class="card-body">
+      <h5>Descripción</h5>
+      <p>Obtiene las ventas totales de cada bodega administrada por el usuario especificado. Los datos incluyen el nombre de la bodega y la cantidad total de ventas realizadas.</p>
+
+      <h5>Parámetros</h5>
+      <ul>
+        <li><strong>correoUsuario:</strong> Correo electrónico del usuario para identificar las bodegas que administra.</li>
+      </ul>
+
+      <h5>Ejemplo de Uso</h5>
+      <pre>
+        <code class="language-http">
+GET /ventas_por_bodega?correoUsuario=juan@mail.com
+        </code>
+      </pre>
+
+      <h5>Respuesta Exitosa (200 OK)</h5>
+      <pre>
+        <code class="language-json">
+[
+  {
+    "WarehouseName": "Bodega 1",
+    "TotalSales": 500
+  },
+  {
+    "WarehouseName": "Bodega 2",
+    "TotalSales": 300
+  }
+]
+        </code>
+      </pre>
+
+      <h5>Respuestas</h5>
+      <ul>
+        <li><strong>200 OK:</strong> Retorna una lista de bodegas administradas por el usuario con el nombre de la bodega y la cantidad total de ventas realizadas.</li>
+        <li><strong>400 Bad Request:</strong> Retorna un error si el parámetro <code>correoUsuario</code> no está proporcionado.</li>
+        <li><strong>404 Not Found:</strong> Retorna un error si el usuario no se encuentra en la base de datos.</li>
+        <li><strong>500 Internal Server Error:</strong> Retorna un error si ocurre un problema al procesar la solicitud.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- Endpoint: GET /ventas_producto_espesifico_tiempo -->
+<div class="card endpoint-card">
+  <div class="card-header">
+    <h5 class="mb-0">
+      <button class="btn btn-link toggle-details" type="button" data-toggle="collapse" data-target="#ventasProductoEspecificoTiempoEndpointCollapse">
+        <i class="fas fa-angle-down"></i> GET /ventas_producto_espesifico_tiempo
+      </button>
+    </h5>
+  </div>
+  <div id="ventasProductoEspecificoTiempoEndpointCollapse" class="collapse">
+    <div class="card-body">
+      <h5>Descripción</h5>
+      <p>Obtiene las ventas históricas de un producto específico en una bodega específica durante un rango de fechas dado. Los datos incluyen la fecha de la venta y la cantidad total vendida en cada fecha.</p>
+
+      <h5>Parámetros</h5>
+      <ul>
+        <li><strong>correoUsuario:</strong> Correo electrónico del usuario para verificar la administración de la bodega.</li>
+        <li><strong>bodegaId:</strong> Identificador de la bodega para la cual se desean obtener las ventas.</li>
+        <li><strong>productoId:</strong> Identificador del producto para el cual se desean obtener las ventas.</li>
+        <li><strong>startDate:</strong> Fecha de inicio del rango de fechas para filtrar las ventas.</li>
+        <li><strong>endDate:</strong> Fecha de fin del rango de fechas para filtrar las ventas.</li>
+      </ul>
+
+      <h5>Ejemplo de Uso</h5>
+      <pre>
+        <code class="language-http">
+GET /ventas_producto_espesifico_tiempo?correoUsuario=juan@mail.com&bodegaId=1&productoId=42&startDate=2024-01-01&endDate=2024-06-30
+        </code>
+      </pre>
+
+      <h5>Respuesta Exitosa (200 OK)</h5>
+      <pre>
+        <code class="language-json">
+[
+  {
+    "Date": "2024-01-02",
+    "TotalSales": 150
+  },
+  {
+    "Date": "2024-03-15",
+    "TotalSales": 200
+  },
+  {
+    "Date": "2024-06-10",
+    "TotalSales": 300
+  }
+]
+        </code>
+      </pre>
+
+      <h5>Respuestas</h5>
+      <ul>
+        <li><strong>200 OK:</strong> Retorna una lista de objetos con la fecha y la cantidad total vendida del producto en la bodega para cada fecha dentro del rango especificado.</li>
+        <li><strong>400 Bad Request:</strong> Retorna un error si alguno de los parámetros <code>correoUsuario</code>, <code>bodegaId</code>, <code>productoId</code>, <code>startDate</code>, o <code>endDate</code> no está proporcionado.</li>
+        <li><strong>403 Forbidden:</strong> Retorna un error si el usuario no administra la bodega especificada.</li>
+        <li><strong>404 Not Found:</strong> Retorna un error si el usuario no se encuentra en la base de datos.</li>
+        <li><strong>500 Internal Server Error:</strong> Retorna un error si ocurre un problema al procesar la solicitud.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- Endpoint: GET /ventas_por_bodega -->
+<div class="card endpoint-card">
+  <div class="card-header">
+    <h5 class="mb-0">
+      <button class="btn btn-link toggle-details" type="button" data-toggle="collapse" data-target="#ventasPorBodegaEndpointCollapse">
+        <i class="fas fa-angle-down"></i> GET /ventas_por_bodega
+      </button>
+    </h5>
+  </div>
+  <div id="ventasPorBodegaEndpointCollapse" class="collapse">
+    <div class="card-body">
+      <h5>Descripción</h5>
+      <p>Obtiene el total de ventas de productos para una bodega específica dentro de un rango de fechas dado. Incluye el nombre del producto y la cantidad total vendida en el rango de fechas.</p>
+
+      <h5>Parámetros</h5>
+      <ul>
+        <li><strong>correoUsuario:</strong> Correo electrónico del usuario para verificar la administración de la bodega.</li>
+        <li><strong>bodegaId:</strong> Identificador de la bodega para la cual se desean obtener las ventas.</li>
+        <li><strong>startDate:</strong> Fecha de inicio del rango de fechas para filtrar las ventas.</li>
+        <li><strong>endDate:</strong> Fecha de fin del rango de fechas para filtrar las ventas.</li>
+      </ul>
+
+      <h5>Ejemplo de Uso</h5>
+      <pre>
+        <code class="language-http">
+GET /ventas_por_bodega?correoUsuario=juan@mail.com&bodegaId=1&startDate=2024-01-01&endDate=2024-06-30
+        </code>
+      </pre>
+
+      <h5>Respuesta Exitosa (200 OK)</h5>
+      <pre>
+        <code class="language-json">
+[
+  {
+    "ProductName": "Producto A",
+    "TotalSales": 500
+  },
+  {
+    "ProductName": "Producto B",
+    "TotalSales": 300
+  },
+  {
+    "ProductName": "Producto C",
+    "TotalSales": 150
+  }
+]
+        </code>
+      </pre>
+
+      <h5>Respuestas</h5>
+      <ul>
+        <li><strong>200 OK:</strong> Retorna una lista de objetos con el nombre del producto y la cantidad total vendida en la bodega durante el rango de fechas especificado.</li>
+        <li><strong>400 Bad Request:</strong> Retorna un error si alguno de los parámetros <code>correoUsuario</code>, <code>bodegaId</code>, <code>startDate</code>, o <code>endDate</code> no está proporcionado.</li>
+        <li><strong>403 Forbidden:</strong> Retorna un error si el usuario no administra la bodega especificada.</li>
+        <li><strong>404 Not Found:</strong> Retorna un error si el usuario no se encuentra en la base de datos.</li>
+        <li><strong>500 Internal Server Error:</strong> Retorna un error si ocurre un problema al procesar la solicitud.</li>
+      </ul>
+    </div>
+  </div>
+</div>
 
 
 

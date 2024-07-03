@@ -4,9 +4,11 @@ const app = express();
 const port = 3000;
 const cors = require('cors');
 const path = require('path');
+const bodyParser = require('body-parser');
 
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
+app.use(bodyParser.json());
 
 // ------------- cors ----------------------
 app.use(cors()); // Habilita CORS para todas las rutas
@@ -23,8 +25,7 @@ const pool = mysql.createPool({
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0
-});
-
+}).promise();
 
 // --------------- aux ---------------------------
 
@@ -102,7 +103,6 @@ app.get("/Obtener_Codigo_Administrador", (req, res) => {
   });
 });
 
-
 // ------------ Bodegas ------------
 
 app.get("/Obtener_Bodegas", (req, res) => {
@@ -115,8 +115,8 @@ app.get("/Obtener_Bodegas", (req, res) => {
     JOIN Tag ON Categorisa.Tag_ID = Tag.ID
     JOIN Administra ON Bodega.ID = Administra.Bodega_ID
     JOIN Usuario ON Administra.Usuario_ID = Usuario.ID
-    WHERE Usuario.Correo = ?
-    GROUP BY Bodega.Nombre
+    WHERE Usuario.Correo = ? AND Administra.Tipo = 'Administrador'
+    GROUP BY Bodega.ID, Bodega.Nombre, Bodega.UbicacionNombre, Bodega.UbicacionLatitud, Bodega.UbicacionLongitud
   `;
   pool.query(sql, [Correo_usuario], (err, results) => {
     if (err) {
@@ -460,6 +460,801 @@ app.put('/Editar_Stock', (req, res) => {
       res.status(200).json({ message: 'Stock editado con éxito' });
   });
 });
+
+// --------------- venta acc dock-----------------------
+app.post('/vender', async (req, res) => {
+  const { clienteId, items, correoUsuario, bodegaId } = req.body; // 'items' should be an array of { productoId, cantidad }
+
+  const connection = await pool.getConnection();
+
+  try {
+    // Start a transaction
+    await connection.beginTransaction();
+
+    // Create a Boleta entry
+    const [boletaResult] = await connection.query(
+      `INSERT INTO Boleta (Fecha) VALUES (CURDATE())`
+    );
+
+    const boletaId = boletaResult.insertId;
+    const ventas = [];
+
+    // Process each item
+    for (const item of items) {
+      const { productoId, cantidad } = item;
+      let remaining = cantidad;
+
+      // Get batches of the product in the specified bodega, ordered by expiration date
+      const [lotes] = await connection.query(
+        `SELECT * FROM Lote 
+         WHERE Producto_ID = ? AND Bodega_ID = ? AND Cantidad > 0 
+         ORDER BY Fecha_de_vencimiento ASC`,
+        [productoId, bodegaId]
+      );
+
+      for (const lote of lotes) {
+        if (remaining <= 0) break;
+
+        const ventaCantidad = Math.min(remaining, lote.Cantidad);
+        remaining -= ventaCantidad;
+
+        // Reduce the lot quantity
+        await connection.query(
+          `UPDATE Lote SET Cantidad = Cantidad - ? WHERE ID = ?`,
+          [ventaCantidad, lote.ID]
+        );
+
+        // Create a Compra entry
+        const [result] = await connection.query(
+          `INSERT INTO Compra (Cliente_ID, Cantidad, Usuario_ID, Lote_ID)
+           VALUES (?, ?, (SELECT ID FROM Usuario WHERE Correo = ?), ?)`,
+          [clienteId, ventaCantidad, correoUsuario, lote.ID]
+        );
+
+        ventas.push(result.insertId);
+      }
+
+      if (remaining > 0) {
+        // Rollback if there's not enough stock
+        await connection.rollback();
+        return res.status(400).json({ message: `Not enough stock for product ID ${productoId} in bodega ID ${bodegaId}` });
+      }
+    }
+
+    // Create Boleta_detalle entries
+    for (const compraId of ventas) {
+      await connection.query(
+        `INSERT INTO Boleta_detalle (ID_compra, ID_Boleta) VALUES (?, ?)`,
+        [compraId, boletaId]
+      );
+    }
+
+    // Commit transaction
+    await connection.commit();
+
+    res.status(200).json({ message: 'Sale completed successfully', boletaId });
+  } catch (error) {
+    // Rollback on error
+    await connection.rollback();
+    console.error(error);
+    res.status(500).json({ message: 'An error occurred', error });
+  } finally {
+    // Release connection back to the pool
+    connection.release();
+  }
+});
+
+// --------------- estadisticas ----------------
+
+// -------- expirar sin documentar ---------
+
+app.get('/bodega_productos_expirar', async (req, res) => {
+  const { bodegaId } = req.query;
+
+  if (!bodegaId) {
+      return res.status(400).json({ error: 'Bodega ID is required' });
+  }
+
+  try {
+      const sql = `
+          SELECT 
+              Producto.Nombre, 
+              Lote.Fecha_de_vencimiento 
+          FROM Lote
+          JOIN Producto ON Lote.Producto_ID = Producto.ID
+          WHERE Lote.Cantidad > 0 AND Lote.Bodega_ID = ?
+          ORDER BY Lote.Fecha_de_vencimiento ASC
+      `;
+      const [results] = await pool.query(sql, [bodegaId]);
+      res.status(200).json(results);
+  } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: 'An error occurred while fetching products expiring soon' });
+  }
+});
+
+app.get('/expirar_por_producto_bodega', async (req, res) => {
+  const { productId, bodegaId } = req.query;
+
+  if (!productId || !bodegaId) {
+      return res.status(400).json({ error: 'Product ID and Bodega ID are required' });
+  }
+
+  try {
+      const sql = `
+          SELECT 
+              Lote.ID AS Batch_ID,
+              Lote.Fecha_de_llegada AS Date_Obtained,
+              Lote.Fecha_de_vencimiento AS Expiration_Date,
+              DATEDIFF(Lote.Fecha_de_vencimiento, CURDATE()) AS Days_Remaining,
+              Lote.Cantidad AS Remaining_Quantity
+          FROM Lote
+          WHERE Lote.Producto_ID = ? AND Lote.Bodega_ID = ? AND Lote.Cantidad > 0
+          ORDER BY Days_Remaining ASC
+      `;
+      const [results] = await pool.query(sql, [productId, bodegaId]);
+      res.status(200).json(results);
+  } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: 'An error occurred while fetching product details' });
+  }
+});
+
+// -------- resumen general ------
+
+app.get("/producto_mas_vendido", async (req, res) => {
+  const { correoUsuario } = req.query;
+
+  if (!correoUsuario) {
+    return res.status(400).json({ error: "correoUsuario is required" });
+  }
+
+  try {
+    // Obtener el userId a partir del correo del usuario
+    const [userResults] = await pool.query(`
+      SELECT ID AS Usuario_ID
+      FROM Usuario
+      WHERE Correo = ?
+    `, [correoUsuario]);
+
+    if (userResults.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const userId = userResults[0].Usuario_ID;
+
+    // Obtener las bodegas administradas por el usuario
+    const [bodegas] = await pool.query(`
+      SELECT b.ID AS Bodega_ID
+      FROM Administra a
+      JOIN Bodega b ON a.Bodega_ID = b.ID
+      WHERE a.Usuario_ID = ? AND a.Tipo = 'Administrador'
+    `, [userId]);
+
+    if (bodegas.length === 0) {
+      return res.status(404).json({ error: "No bodegas found for this user" });
+    }
+
+    // Obtener el producto más vendido en las bodegas administradas por el usuario
+    const [results] = await pool.query(`
+      SELECT p.Nombre AS ProductName, SUM(c.Cantidad) AS TotalSold
+      FROM Compra c
+      JOIN Lote l ON c.Lote_ID = l.ID
+      JOIN Producto p ON l.Producto_ID = p.ID
+      WHERE l.Bodega_ID IN (?)
+      GROUP BY p.ID
+      ORDER BY TotalSold DESC
+      LIMIT 1
+    `, [bodegas.map(b => b.Bodega_ID).join(',')]);
+
+    if (results.length === 0) {
+      return res.status(404).json({ error: "No products found" });
+    }
+
+    res.status(200).json(results[0]);
+  } catch (err) {
+    console.error("Error in the query:", err);
+    res.status(500).json({ error: "Error fetching best sold product" });
+  }
+});
+
+app.get("/bodega_mas_activa", async (req, res) => {
+  const { correoUsuario } = req.query;
+
+  if (!correoUsuario) {
+    return res.status(400).json({ error: "correoUsuario is required" });
+  }
+
+  try {
+    // Obtener el userId a partir del correo del usuario
+    const [userResults] = await pool.query(`
+      SELECT ID AS Usuario_ID
+      FROM Usuario
+      WHERE Correo = ?
+    `, [correoUsuario]);
+
+    if (userResults.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const userId = userResults[0].Usuario_ID;
+
+    // Obtener las bodegas administradas por el usuario
+    const [bodegas] = await pool.query(`
+      SELECT b.ID AS Bodega_ID
+      FROM Administra a
+      JOIN Bodega b ON a.Bodega_ID = b.ID
+      WHERE a.Usuario_ID = ? AND a.Tipo = 'Administrador'
+    `, [userId]);
+
+    if (bodegas.length === 0) {
+      return res.status(404).json({ error: "No bodegas found for this user" });
+    }
+
+    // Obtener la bodega más activa en función de la cantidad total vendida
+    const [results] = await pool.query(`
+      SELECT b.Nombre AS WineryName, SUM(c.Cantidad) AS TotalSold
+      FROM Compra c
+      JOIN Lote l ON c.Lote_ID = l.ID
+      JOIN Bodega b ON l.Bodega_ID = b.ID
+      WHERE l.Bodega_ID IN (?)
+      GROUP BY b.ID
+      ORDER BY TotalSold DESC
+      LIMIT 1
+    `, [bodegas.map(b => b.Bodega_ID).join(',')]);
+
+    if (results.length === 0) {
+      return res.status(404).json({ error: "No wineries found" });
+    }
+
+    res.status(200).json(results[0]);
+  } catch (err) {
+    console.error("Error in the query:", err);
+    res.status(500).json({ error: "Error fetching most active winery" });
+  }
+});
+
+app.get("/vendedor_mas_activo", async (req, res) => {
+  const { correoUsuario } = req.query;
+
+  if (!correoUsuario) {
+    return res.status(400).json({ error: "correoUsuario is required" });
+  }
+
+  try {
+    // Obtener el userId a partir del correo del usuario
+    const [userResults] = await pool.query(`
+      SELECT ID AS Usuario_ID
+      FROM Usuario
+      WHERE Correo = ?
+    `, [correoUsuario]);
+
+    if (userResults.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const userId = userResults[0].Usuario_ID;
+
+    // Obtener las bodegas administradas por el usuario
+    const [bodegas] = await pool.query(`
+      SELECT b.ID AS Bodega_ID
+      FROM Administra a
+      JOIN Bodega b ON a.Bodega_ID = b.ID
+      WHERE a.Usuario_ID = ? AND a.Tipo = 'Administrador'
+    `, [userId]);
+
+    if (bodegas.length === 0) {
+      return res.status(404).json({ error: "No bodegas found for this user" });
+    }
+
+    // Obtener el vendedor más activo en las bodegas administradas por el usuario
+    const [results] = await pool.query(`
+      SELECT u.Nombre AS SellerName, SUM(c.Cantidad) AS TotalSold
+      FROM Compra c
+      JOIN Usuario u ON c.Usuario_ID = u.ID
+      JOIN Lote l ON c.Lote_ID = l.ID
+      WHERE l.Bodega_ID IN (?)
+      GROUP BY u.ID
+      ORDER BY TotalSold DESC
+      LIMIT 1
+    `, [bodegas.map(b => b.Bodega_ID).join(',')]);
+
+    if (results.length === 0) {
+      return res.status(404).json({ error: "No sellers found" });
+    }
+
+    res.status(200).json(results[0]);
+  } catch (err) {
+    console.error("Error in the query:", err);
+    res.status(500).json({ error: "Error fetching best seller" });
+  }
+});
+
+app.get("/producto_menos_vendido", async (req, res) => {
+  const { correoUsuario } = req.query;
+
+  if (!correoUsuario) {
+    return res.status(400).json({ error: "correoUsuario is required" });
+  }
+
+  try {
+    // Obtener el userId a partir del correo del usuario
+    const [userResults] = await pool.query(`
+      SELECT ID AS Usuario_ID
+      FROM Usuario
+      WHERE Correo = ?
+    `, [correoUsuario]);
+
+    if (userResults.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const userId = userResults[0].Usuario_ID;
+
+    // Obtener las bodegas administradas por el usuario
+    const [bodegas] = await pool.query(`
+      SELECT b.ID AS Bodega_ID
+      FROM Administra a
+      JOIN Bodega b ON a.Bodega_ID = b.ID
+      WHERE a.Usuario_ID = ? AND a.Tipo = 'Administrador'
+    `, [userId]);
+
+    if (bodegas.length === 0) {
+      return res.status(404).json({ error: "No bodegas found for this user" });
+    }
+
+    // Obtener el producto menos vendido en las bodegas administradas por el usuario
+    const [results] = await pool.query(`
+      SELECT p.Nombre AS ProductName, COALESCE(SUM(c.Cantidad), 0) AS TotalSold
+      FROM Producto p
+      LEFT JOIN Lote l ON p.ID = l.Producto_ID
+      LEFT JOIN Compra c ON l.ID = c.Lote_ID AND l.Bodega_ID IN (?)
+      GROUP BY p.ID
+      ORDER BY TotalSold ASC
+      LIMIT 1
+    `, [bodegas.map(b => b.Bodega_ID).join(',')]);
+
+    if (results.length === 0) {
+      return res.status(404).json({ error: "No products found" });
+    }
+
+    res.status(200).json(results[0]);
+  } catch (err) {
+    console.error("Error in the query:", err);
+    res.status(500).json({ error: "Error fetching least sold product" });
+  }
+});
+
+// --------- resumen por fecha  YYYY-MM-DD -------
+
+app.get("/producto_mas_vendido_fecha", async (req, res) => {
+  const { correoUsuario, startDate, endDate } = req.query;
+
+  if (!correoUsuario || !startDate || !endDate) {
+    return res.status(400).json({ error: "correoUsuario, startDate, and endDate are required" });
+  }
+
+  try {
+    // Obtener el userId a partir del correo del usuario
+    const [userResults] = await pool.query(`
+      SELECT ID AS Usuario_ID
+      FROM Usuario
+      WHERE Correo = ?
+    `, [correoUsuario]);
+
+    if (userResults.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const userId = userResults[0].Usuario_ID;
+
+    // Obtener las bodegas administradas por el usuario
+    const [bodegas] = await pool.query(`
+      SELECT b.ID AS Bodega_ID
+      FROM Administra a
+      JOIN Bodega b ON a.Bodega_ID = b.ID
+      WHERE a.Usuario_ID = ? AND a.Tipo = 'Administrador'
+    `, [userId]);
+
+    if (bodegas.length === 0) {
+      return res.status(404).json({ error: "No bodegas found for this user" });
+    }
+
+    // Obtener el producto más vendido en las bodegas administradas por el usuario dentro del rango de fechas
+    const [results] = await pool.query(`
+      SELECT p.Nombre AS ProductName, SUM(c.Cantidad) AS TotalSold
+      FROM Compra c
+      JOIN Lote l ON c.Lote_ID = l.ID
+      JOIN Producto p ON l.Producto_ID = p.ID
+      WHERE l.Bodega_ID IN (?)
+      AND c.Fecha BETWEEN ? AND ?
+      GROUP BY p.ID
+      ORDER BY TotalSold DESC
+      LIMIT 1
+    `, [bodegas.map(b => b.Bodega_ID).join(','), startDate, endDate]);
+
+    if (results.length === 0) {
+      return res.status(404).json({ error: "No products found" });
+    }
+
+    res.status(200).json(results[0]);
+  } catch (err) {
+    console.error("Error in the query:", err);
+    res.status(500).json({ error: "Error fetching best sold product" });
+  }
+});
+
+app.get("/bodega_mas_activa_fecha", async (req, res) => {
+  const { correoUsuario, startDate, endDate } = req.query;
+
+  if (!correoUsuario || !startDate || !endDate) {
+    return res.status(400).json({ error: "correoUsuario, startDate, and endDate are required" });
+  }
+
+  try {
+    // Obtener el userId a partir del correo del usuario
+    const [userResults] = await pool.query(`
+      SELECT ID AS Usuario_ID
+      FROM Usuario
+      WHERE Correo = ?
+    `, [correoUsuario]);
+
+    if (userResults.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const userId = userResults[0].Usuario_ID;
+
+    // Obtener las bodegas administradas por el usuario
+    const [bodegas] = await pool.query(`
+      SELECT b.ID AS Bodega_ID
+      FROM Administra a
+      JOIN Bodega b ON a.Bodega_ID = b.ID
+      WHERE a.Usuario_ID = ? AND a.Tipo = 'Administrador'
+    `, [userId]);
+
+    if (bodegas.length === 0) {
+      return res.status(404).json({ error: "No bodegas found for this user" });
+    }
+
+    // Obtener la bodega más activa en función de la cantidad total vendida dentro del rango de fechas
+    const [results] = await pool.query(`
+      SELECT b.Nombre AS WineryName, SUM(c.Cantidad) AS TotalSold
+      FROM Compra c
+      JOIN Lote l ON c.Lote_ID = l.ID
+      JOIN Bodega b ON l.Bodega_ID = b.ID
+      WHERE l.Bodega_ID IN (?)
+      AND c.Fecha BETWEEN ? AND ?
+      GROUP BY b.ID
+      ORDER BY TotalSold DESC
+      LIMIT 1
+    `, [bodegas.map(b => b.Bodega_ID).join(','), startDate, endDate]);
+
+    if (results.length === 0) {
+      return res.status(404).json({ error: "No wineries found" });
+    }
+
+    res.status(200).json(results[0]);
+  } catch (err) {
+    console.error("Error in the query:", err);
+    res.status(500).json({ error: "Error fetching most active winery" });
+  }
+});
+
+app.get("/vendedor_mas_activo_fecha", async (req, res) => {
+  const { correoUsuario, startDate, endDate } = req.query;
+
+  if (!correoUsuario || !startDate || !endDate) {
+    return res.status(400).json({ error: "correoUsuario, startDate, and endDate are required" });
+  }
+
+  try {
+    // Obtener el userId a partir del correo del usuario
+    const [userResults] = await pool.query(`
+      SELECT ID AS Usuario_ID
+      FROM Usuario
+      WHERE Correo = ?
+    `, [correoUsuario]);
+
+    if (userResults.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const userId = userResults[0].Usuario_ID;
+
+    // Obtener las bodegas administradas por el usuario
+    const [bodegas] = await pool.query(`
+      SELECT b.ID AS Bodega_ID
+      FROM Administra a
+      JOIN Bodega b ON a.Bodega_ID = b.ID
+      WHERE a.Usuario_ID = ? AND a.Tipo = 'Administrador'
+    `, [userId]);
+
+    if (bodegas.length === 0) {
+      return res.status(404).json({ error: "No bodegas found for this user" });
+    }
+
+    // Obtener el vendedor más activo en las bodegas administradas por el usuario dentro del rango de fechas
+    const [results] = await pool.query(`
+      SELECT u.Nombre AS SellerName, SUM(c.Cantidad) AS TotalSold
+      FROM Compra c
+      JOIN Usuario u ON c.Usuario_ID = u.ID
+      JOIN Lote l ON c.Lote_ID = l.ID
+      WHERE l.Bodega_ID IN (?)
+      AND c.Fecha BETWEEN ? AND ?
+      GROUP BY u.ID
+      ORDER BY TotalSold DESC
+      LIMIT 1
+    `, [bodegas.map(b => b.Bodega_ID).join(','), startDate, endDate]);
+
+    if (results.length === 0) {
+      return res.status(404).json({ error: "No sellers found" });
+    }
+
+    res.status(200).json(results[0]);
+  } catch (err) {
+    console.error("Error in the query:", err);
+    res.status(500).json({ error: "Error fetching best seller" });
+  }
+});
+
+app.get("/producto_menos_vendido_fecha", async (req, res) => {
+  const { correoUsuario, startDate, endDate } = req.query;
+
+  if (!correoUsuario || !startDate || !endDate) {
+    return res.status(400).json({ error: "correoUsuario, startDate, and endDate are required" });
+  }
+
+  try {
+    // Obtener el userId a partir del correo del usuario
+    const [userResults] = await pool.query(`
+      SELECT ID AS Usuario_ID
+      FROM Usuario
+      WHERE Correo = ?
+    `, [correoUsuario]);
+
+    if (userResults.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const userId = userResults[0].Usuario_ID;
+
+    // Obtener las bodegas administradas por el usuario
+    const [bodegas] = await pool.query(`
+      SELECT b.ID AS Bodega_ID
+      FROM Administra a
+      JOIN Bodega b ON a.Bodega_ID = b.ID
+      WHERE a.Usuario_ID = ? AND a.Tipo = 'Administrador'
+    `, [userId]);
+
+    if (bodegas.length === 0) {
+      return res.status(404).json({ error: "No bodegas found for this user" });
+    }
+
+    // Obtener el producto menos vendido en las bodegas administradas por el usuario dentro del rango de fechas
+    const [results] = await pool.query(`
+      SELECT p.Nombre AS ProductName, COALESCE(SUM(c.Cantidad), 0) AS TotalSold
+      FROM Producto p
+      LEFT JOIN Lote l ON p.ID = l.Producto_ID
+      LEFT JOIN Compra c ON l.ID = c.Lote_ID AND l.Bodega_ID IN (?)
+      AND c.Fecha BETWEEN ? AND ?
+      GROUP BY p.ID
+      ORDER BY TotalSold ASC
+      LIMIT 1
+    `, [bodegas.map(b => b.Bodega_ID).join(','), startDate, endDate]);
+
+    if (results.length === 0) {
+      return res.status(404).json({ error: "No products found" });
+    }
+
+    res.status(200).json(results[0]);
+  } catch (err) {
+    console.error("Error in the query:", err);
+    res.status(500).json({ error: "Error fetching least sold product" });
+  }
+});
+
+// ---------- resumen graficos --------
+
+
+//  ok
+app.get("/Stock_en_bodega_espesifica", async (req, res) => {
+  const { correoUsuario, bodegaId } = req.query;
+
+  if (!correoUsuario || !bodegaId) {
+    return res.status(400).json({ error: "correoUsuario and bodegaId are required" });
+  }
+
+  try {
+    // Obtener el userId a partir del correo del usuario
+    const [userResults] = await pool.query(`
+      SELECT ID AS Usuario_ID
+      FROM Usuario
+      WHERE Correo = ?
+    `, [correoUsuario]);
+
+    if (userResults.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const userId = userResults[0].Usuario_ID;
+
+    // Verificar si el usuario administra la bodega
+    const [adminResults] = await pool.query(`
+      SELECT 1
+      FROM Administra
+      WHERE Usuario_ID = ? AND Bodega_ID = ? AND Tipo = 'Administrador'
+    `, [userId, bodegaId]);
+
+    if (adminResults.length === 0) {
+      return res.status(403).json({ error: "User does not manage this warehouse" });
+    }
+
+    // Obtener el stock actual en la bodega para los productos en la tabla Guarda
+    const [results] = await pool.query(`
+      SELECT p.Nombre AS ProductName, COALESCE(SUM(l.Cantidad), 0) AS Stock
+      FROM Producto p
+      INNER JOIN Guarda g ON p.ID = g.Producto_ID
+      LEFT JOIN Lote l ON l.Producto_ID = p.ID AND l.Bodega_ID = g.Bodega_ID
+      WHERE g.Bodega_ID = ?
+      GROUP BY p.ID
+    `, [bodegaId]);
+
+    res.status(200).json(results);
+  } catch (err) {
+    console.error("Error in the query:", err);
+    res.status(500).json({ error: "Error fetching stock data" });
+  }
+});
+
+
+// okey
+app.get("/ventas_por_bodega", async (req, res) => {
+  const { correoUsuario } = req.query;
+
+  if (!correoUsuario) {
+    return res.status(400).json({ error: "correoUsuario is required" });
+  }
+
+  try {
+    // Obtener el userId a partir del correo del usuario
+    const [userResults] = await pool.query(`
+      SELECT ID AS Usuario_ID
+      FROM Usuario
+      WHERE Correo = ?
+    `, [correoUsuario]);
+
+    if (userResults.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const userId = userResults[0].Usuario_ID;
+
+    // Verificar las bodegas que administra el usuario
+    const [adminResults] = await pool.query(`
+      SELECT DISTINCT b.Nombre AS WarehouseName, COALESCE(SUM(c.Cantidad), 0) AS TotalSales
+      FROM Administra a
+      LEFT JOIN Bodega b ON a.Bodega_ID = b.ID
+      LEFT JOIN Guarda g ON b.ID = g.Bodega_ID
+      LEFT JOIN Lote l ON g.Producto_ID = l.Producto_ID
+      LEFT JOIN Compra c ON l.ID = c.Lote_ID
+      WHERE a.Usuario_ID = ? AND a.Tipo = 'Administrador'
+      GROUP BY b.ID
+    `, [userId]);
+
+    res.status(200).json(adminResults);
+  } catch (err) {
+    console.error("Error in the query:", err);
+    res.status(500).json({ error: "Error fetching warehouse sales data" });
+  }
+});
+
+
+// okey
+app.get("/ventas_producto_espesifico_tiempo", async (req, res) => {
+  const { correoUsuario, bodegaId, productoId, startDate, endDate } = req.query;
+
+  if (!correoUsuario || !bodegaId || !productoId || !startDate || !endDate) {
+    return res.status(400).json({ error: "correoUsuario, bodegaId, productoId, startDate, and endDate are required" });
+  }
+
+  try {
+    // Obtener el userId a partir del correo del usuario
+    const [userResults] = await pool.query(`
+      SELECT ID AS Usuario_ID
+      FROM Usuario
+      WHERE Correo = ?
+    `, [correoUsuario]);
+
+    if (userResults.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const userId = userResults[0].Usuario_ID;
+
+    // Verificar si el usuario administra la bodega
+    const [adminResults] = await pool.query(`
+      SELECT 1
+      FROM Administra
+      WHERE Usuario_ID = ? AND Bodega_ID = ? AND Tipo = 'Administrador'
+    `, [userId, bodegaId]);
+
+    if (adminResults.length === 0) {
+      return res.status(403).json({ error: "User does not manage this warehouse" });
+    }
+
+    // Obtener ventas históricas del producto
+    const [results] = await pool.query(`
+      SELECT DATE(b.Fecha) AS Date, COALESCE(SUM(c.Cantidad), 0) AS TotalSales
+      FROM Producto p
+      LEFT JOIN Guarda g ON p.ID = g.Producto_ID
+      LEFT JOIN Lote l ON g.Bodega_ID = ? AND l.Producto_ID = p.ID
+      LEFT JOIN Compra c ON l.ID = c.Lote_ID
+      LEFT JOIN Boleta_detalle bd ON c.ID = bd.ID_compra
+      LEFT JOIN Boleta b ON bd.ID_Boleta = b.ID
+      WHERE p.ID = ? AND b.Fecha BETWEEN ? AND ?
+      GROUP BY DATE(b.Fecha)
+      ORDER BY DATE(b.Fecha)
+    `, [bodegaId, productoId, startDate, endDate]);
+
+    res.status(200).json(results);
+  } catch (err) {
+    console.error("Error in the query:", err);
+    res.status(500).json({ error: "Error fetching historical sales data" });
+  }
+});
+
+app.get("/ventas_por_bodega", async (req, res) => {
+  const { correoUsuario, bodegaId, startDate, endDate } = req.query;
+
+  if (!correoUsuario || !bodegaId || !startDate || !endDate) {
+    return res.status(400).json({ error: "correoUsuario, bodegaId, startDate, and endDate are required" });
+  }
+
+  try {
+    // Obtener el userId a partir del correo del usuario
+    const [userResults] = await pool.query(`
+      SELECT ID AS Usuario_ID
+      FROM Usuario
+      WHERE Correo = ?
+    `, [correoUsuario]);
+
+    if (userResults.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const userId = userResults[0].Usuario_ID;
+
+    // Verificar si el usuario administra la bodega
+    const [adminResults] = await pool.query(`
+      SELECT 1
+      FROM Administra
+      WHERE Usuario_ID = ? AND Bodega_ID = ? AND Tipo = 'Administrador'
+    `, [userId, bodegaId]);
+
+    if (adminResults.length === 0) {
+      return res.status(403).json({ error: "User does not manage this warehouse" });
+    }
+
+    // Obtener la venta de productos por bodega en el rango de fechas
+    const [results] = await pool.query(`
+      SELECT p.Nombre AS ProductName, COALESCE(SUM(COALESCE(c.Cantidad, 0)), 0) AS TotalSales
+      FROM Producto p
+      INNER JOIN Guarda g ON p.ID = g.Producto_ID AND g.Bodega_ID = ?
+      LEFT JOIN Lote l ON g.Bodega_ID = l.Bodega_ID AND l.Producto_ID = p.ID
+      LEFT JOIN Compra c ON l.ID = c.Lote_ID
+      LEFT JOIN Boleta_detalle bd ON c.ID = bd.ID_compra
+      LEFT JOIN Boleta b ON bd.ID_Boleta = b.ID AND b.Fecha BETWEEN ? AND ?
+      GROUP BY p.ID
+    `, [bodegaId, startDate, endDate]);
+
+    res.status(200).json(results);
+  } catch (err) {
+    console.error("Error in the query:", err);
+    res.status(500).json({ error: "Error fetching sales data" });
+  }
+});
+
 
 // ------------- Print del puerto -------------
 app.listen(port, () => {

@@ -136,7 +136,8 @@ INSERT INTO Usuario (Nombre, Contrasena, Correo, Codigo_administrador) VALUES
 
 INSERT INTO Administra (Tipo, Usuario_ID, Bodega_ID) VALUES
 ('Administrador', 1, 1),
-('Empleado', 2, 1);
+('Empleado', 2, 1),
+('Empleado', 1, 2);
 
 INSERT INTO Categorisa (Bodega_ID, Tag_ID) VALUES
 (1, 1),
