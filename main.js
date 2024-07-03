@@ -25,6 +25,18 @@ const pool = mysql.createPool({
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0
+});
+
+// ------------- Conexion con promice --------------
+
+const pool2 = mysql.createPool({
+  host: 'db',
+  user: 'alfajor',
+  password: 'alfajor',
+  database: 'inventario',
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0
 }).promise();
 
 // --------------- aux ---------------------------
@@ -65,8 +77,6 @@ app.post("/Registrar", (req, res) => {
       return res.status(500).json({ error: "Error al crear el usuario" });
 
     }
-
-  
     res.status(200).json({ message: "Usuario creado" });
   });
 });
@@ -465,7 +475,7 @@ app.put('/Editar_Stock', (req, res) => {
 app.post('/vender', async (req, res) => {
   const { clienteId, items, correoUsuario, bodegaId } = req.body; // 'items' should be an array of { productoId, cantidad }
 
-  const connection = await pool.getConnection();
+  const connection = await pool2.getConnection();
 
   try {
     // Start a transaction
@@ -565,7 +575,7 @@ app.get('/bodega_productos_expirar', async (req, res) => {
           WHERE Lote.Cantidad > 0 AND Lote.Bodega_ID = ?
           ORDER BY Lote.Fecha_de_vencimiento ASC
       `;
-      const [results] = await pool.query(sql, [bodegaId]);
+      const [results] = await pool2.query(sql, [bodegaId]);
       res.status(200).json(results);
   } catch (err) {
       console.error(err);
@@ -592,7 +602,7 @@ app.get('/expirar_por_producto_bodega', async (req, res) => {
           WHERE Lote.Producto_ID = ? AND Lote.Bodega_ID = ? AND Lote.Cantidad > 0
           ORDER BY Days_Remaining ASC
       `;
-      const [results] = await pool.query(sql, [productId, bodegaId]);
+      const [results] = await pool2.query(sql, [productId, bodegaId]);
       res.status(200).json(results);
   } catch (err) {
       console.error(err);
@@ -611,7 +621,7 @@ app.get("/producto_mas_vendido", async (req, res) => {
 
   try {
     // Obtener el userId a partir del correo del usuario
-    const [userResults] = await pool.query(`
+    const [userResults] = await pool2.query(`
       SELECT ID AS Usuario_ID
       FROM Usuario
       WHERE Correo = ?
@@ -624,7 +634,7 @@ app.get("/producto_mas_vendido", async (req, res) => {
     const userId = userResults[0].Usuario_ID;
 
     // Obtener las bodegas administradas por el usuario
-    const [bodegas] = await pool.query(`
+    const [bodegas] = await pool2.query(`
       SELECT b.ID AS Bodega_ID
       FROM Administra a
       JOIN Bodega b ON a.Bodega_ID = b.ID
@@ -636,7 +646,7 @@ app.get("/producto_mas_vendido", async (req, res) => {
     }
 
     // Obtener el producto más vendido en las bodegas administradas por el usuario
-    const [results] = await pool.query(`
+    const [results] = await pool2.query(`
       SELECT p.Nombre AS ProductName, SUM(c.Cantidad) AS TotalSold
       FROM Compra c
       JOIN Lote l ON c.Lote_ID = l.ID
@@ -667,7 +677,7 @@ app.get("/bodega_mas_activa", async (req, res) => {
 
   try {
     // Obtener el userId a partir del correo del usuario
-    const [userResults] = await pool.query(`
+    const [userResults] = await pool2.query(`
       SELECT ID AS Usuario_ID
       FROM Usuario
       WHERE Correo = ?
@@ -680,7 +690,7 @@ app.get("/bodega_mas_activa", async (req, res) => {
     const userId = userResults[0].Usuario_ID;
 
     // Obtener las bodegas administradas por el usuario
-    const [bodegas] = await pool.query(`
+    const [bodegas] = await pool2.query(`
       SELECT b.ID AS Bodega_ID
       FROM Administra a
       JOIN Bodega b ON a.Bodega_ID = b.ID
@@ -692,7 +702,7 @@ app.get("/bodega_mas_activa", async (req, res) => {
     }
 
     // Obtener la bodega más activa en función de la cantidad total vendida
-    const [results] = await pool.query(`
+    const [results] = await pool2.query(`
       SELECT b.Nombre AS WineryName, SUM(c.Cantidad) AS TotalSold
       FROM Compra c
       JOIN Lote l ON c.Lote_ID = l.ID
@@ -723,7 +733,7 @@ app.get("/vendedor_mas_activo", async (req, res) => {
 
   try {
     // Obtener el userId a partir del correo del usuario
-    const [userResults] = await pool.query(`
+    const [userResults] = await pool2.query(`
       SELECT ID AS Usuario_ID
       FROM Usuario
       WHERE Correo = ?
@@ -736,7 +746,7 @@ app.get("/vendedor_mas_activo", async (req, res) => {
     const userId = userResults[0].Usuario_ID;
 
     // Obtener las bodegas administradas por el usuario
-    const [bodegas] = await pool.query(`
+    const [bodegas] = await pool2.query(`
       SELECT b.ID AS Bodega_ID
       FROM Administra a
       JOIN Bodega b ON a.Bodega_ID = b.ID
@@ -748,7 +758,7 @@ app.get("/vendedor_mas_activo", async (req, res) => {
     }
 
     // Obtener el vendedor más activo en las bodegas administradas por el usuario
-    const [results] = await pool.query(`
+    const [results] = await pool2.query(`
       SELECT u.Nombre AS SellerName, SUM(c.Cantidad) AS TotalSold
       FROM Compra c
       JOIN Usuario u ON c.Usuario_ID = u.ID
@@ -779,7 +789,7 @@ app.get("/producto_menos_vendido", async (req, res) => {
 
   try {
     // Obtener el userId a partir del correo del usuario
-    const [userResults] = await pool.query(`
+    const [userResults] = await pool2.query(`
       SELECT ID AS Usuario_ID
       FROM Usuario
       WHERE Correo = ?
@@ -792,7 +802,7 @@ app.get("/producto_menos_vendido", async (req, res) => {
     const userId = userResults[0].Usuario_ID;
 
     // Obtener las bodegas administradas por el usuario
-    const [bodegas] = await pool.query(`
+    const [bodegas] = await pool2.query(`
       SELECT b.ID AS Bodega_ID
       FROM Administra a
       JOIN Bodega b ON a.Bodega_ID = b.ID
@@ -804,7 +814,7 @@ app.get("/producto_menos_vendido", async (req, res) => {
     }
 
     // Obtener el producto menos vendido en las bodegas administradas por el usuario
-    const [results] = await pool.query(`
+    const [results] = await pool2.query(`
       SELECT p.Nombre AS ProductName, COALESCE(SUM(c.Cantidad), 0) AS TotalSold
       FROM Producto p
       LEFT JOIN Lote l ON p.ID = l.Producto_ID
@@ -836,7 +846,7 @@ app.get("/producto_mas_vendido_fecha", async (req, res) => {
 
   try {
     // Obtener el userId a partir del correo del usuario
-    const [userResults] = await pool.query(`
+    const [userResults] = await pool2.query(`
       SELECT ID AS Usuario_ID
       FROM Usuario
       WHERE Correo = ?
@@ -849,7 +859,7 @@ app.get("/producto_mas_vendido_fecha", async (req, res) => {
     const userId = userResults[0].Usuario_ID;
 
     // Obtener las bodegas administradas por el usuario
-    const [bodegas] = await pool.query(`
+    const [bodegas] = await pool2.query(`
       SELECT b.ID AS Bodega_ID
       FROM Administra a
       JOIN Bodega b ON a.Bodega_ID = b.ID
@@ -861,7 +871,7 @@ app.get("/producto_mas_vendido_fecha", async (req, res) => {
     }
 
     // Obtener el producto más vendido en las bodegas administradas por el usuario dentro del rango de fechas
-    const [results] = await pool.query(`
+    const [results] = await pool2.query(`
       SELECT p.Nombre AS ProductName, SUM(c.Cantidad) AS TotalSold
       FROM Compra c
       JOIN Lote l ON c.Lote_ID = l.ID
@@ -893,7 +903,7 @@ app.get("/bodega_mas_activa_fecha", async (req, res) => {
 
   try {
     // Obtener el userId a partir del correo del usuario
-    const [userResults] = await pool.query(`
+    const [userResults] = await pool2.query(`
       SELECT ID AS Usuario_ID
       FROM Usuario
       WHERE Correo = ?
@@ -906,7 +916,7 @@ app.get("/bodega_mas_activa_fecha", async (req, res) => {
     const userId = userResults[0].Usuario_ID;
 
     // Obtener las bodegas administradas por el usuario
-    const [bodegas] = await pool.query(`
+    const [bodegas] = await pool2.query(`
       SELECT b.ID AS Bodega_ID
       FROM Administra a
       JOIN Bodega b ON a.Bodega_ID = b.ID
@@ -918,7 +928,7 @@ app.get("/bodega_mas_activa_fecha", async (req, res) => {
     }
 
     // Obtener la bodega más activa en función de la cantidad total vendida dentro del rango de fechas
-    const [results] = await pool.query(`
+    const [results] = await pool2.query(`
       SELECT b.Nombre AS WineryName, SUM(c.Cantidad) AS TotalSold
       FROM Compra c
       JOIN Lote l ON c.Lote_ID = l.ID
@@ -950,7 +960,7 @@ app.get("/vendedor_mas_activo_fecha", async (req, res) => {
 
   try {
     // Obtener el userId a partir del correo del usuario
-    const [userResults] = await pool.query(`
+    const [userResults] = await pool2.query(`
       SELECT ID AS Usuario_ID
       FROM Usuario
       WHERE Correo = ?
@@ -963,7 +973,7 @@ app.get("/vendedor_mas_activo_fecha", async (req, res) => {
     const userId = userResults[0].Usuario_ID;
 
     // Obtener las bodegas administradas por el usuario
-    const [bodegas] = await pool.query(`
+    const [bodegas] = await pool2.query(`
       SELECT b.ID AS Bodega_ID
       FROM Administra a
       JOIN Bodega b ON a.Bodega_ID = b.ID
@@ -975,7 +985,7 @@ app.get("/vendedor_mas_activo_fecha", async (req, res) => {
     }
 
     // Obtener el vendedor más activo en las bodegas administradas por el usuario dentro del rango de fechas
-    const [results] = await pool.query(`
+    const [results] = await pool2.query(`
       SELECT u.Nombre AS SellerName, SUM(c.Cantidad) AS TotalSold
       FROM Compra c
       JOIN Usuario u ON c.Usuario_ID = u.ID
@@ -1007,7 +1017,7 @@ app.get("/producto_menos_vendido_fecha", async (req, res) => {
 
   try {
     // Obtener el userId a partir del correo del usuario
-    const [userResults] = await pool.query(`
+    const [userResults] = await pool2.query(`
       SELECT ID AS Usuario_ID
       FROM Usuario
       WHERE Correo = ?
@@ -1020,7 +1030,7 @@ app.get("/producto_menos_vendido_fecha", async (req, res) => {
     const userId = userResults[0].Usuario_ID;
 
     // Obtener las bodegas administradas por el usuario
-    const [bodegas] = await pool.query(`
+    const [bodegas] = await pool2.query(`
       SELECT b.ID AS Bodega_ID
       FROM Administra a
       JOIN Bodega b ON a.Bodega_ID = b.ID
@@ -1032,7 +1042,7 @@ app.get("/producto_menos_vendido_fecha", async (req, res) => {
     }
 
     // Obtener el producto menos vendido en las bodegas administradas por el usuario dentro del rango de fechas
-    const [results] = await pool.query(`
+    const [results] = await pool2.query(`
       SELECT p.Nombre AS ProductName, COALESCE(SUM(c.Cantidad), 0) AS TotalSold
       FROM Producto p
       LEFT JOIN Lote l ON p.ID = l.Producto_ID
@@ -1066,7 +1076,7 @@ app.get("/Stock_en_bodega_espesifica", async (req, res) => {
 
   try {
     // Obtener el userId a partir del correo del usuario
-    const [userResults] = await pool.query(`
+    const [userResults] = await pool2.query(`
       SELECT ID AS Usuario_ID
       FROM Usuario
       WHERE Correo = ?
@@ -1079,7 +1089,7 @@ app.get("/Stock_en_bodega_espesifica", async (req, res) => {
     const userId = userResults[0].Usuario_ID;
 
     // Verificar si el usuario administra la bodega
-    const [adminResults] = await pool.query(`
+    const [adminResults] = await pool2.query(`
       SELECT 1
       FROM Administra
       WHERE Usuario_ID = ? AND Bodega_ID = ? AND Tipo = 'Administrador'
@@ -1090,7 +1100,7 @@ app.get("/Stock_en_bodega_espesifica", async (req, res) => {
     }
 
     // Obtener el stock actual en la bodega para los productos en la tabla Guarda
-    const [results] = await pool.query(`
+    const [results] = await pool2.query(`
       SELECT p.Nombre AS ProductName, COALESCE(SUM(l.Cantidad), 0) AS Stock
       FROM Producto p
       INNER JOIN Guarda g ON p.ID = g.Producto_ID
@@ -1115,7 +1125,7 @@ app.get("/ventas_por_bodega", async (req, res) => {
 
   try {
     // Obtener el userId a partir del correo del usuario
-    const [userResults] = await pool.query(`
+    const [userResults] = await pool2.query(`
       SELECT ID AS Usuario_ID
       FROM Usuario
       WHERE Correo = ?
@@ -1128,7 +1138,7 @@ app.get("/ventas_por_bodega", async (req, res) => {
     const userId = userResults[0].Usuario_ID;
 
     // Verificar las bodegas que administra el usuario
-    const [adminResults] = await pool.query(`
+    const [adminResults] = await pool2.query(`
       SELECT DISTINCT b.Nombre AS WarehouseName, COALESCE(SUM(c.Cantidad), 0) AS TotalSales
       FROM Administra a
       LEFT JOIN Bodega b ON a.Bodega_ID = b.ID
@@ -1155,7 +1165,7 @@ app.get("/ventas_producto_espesifico_tiempo", async (req, res) => {
 
   try {
     // Obtener el userId a partir del correo del usuario
-    const [userResults] = await pool.query(`
+    const [userResults] = await pool2.query(`
       SELECT ID AS Usuario_ID
       FROM Usuario
       WHERE Correo = ?
@@ -1168,7 +1178,7 @@ app.get("/ventas_producto_espesifico_tiempo", async (req, res) => {
     const userId = userResults[0].Usuario_ID;
 
     // Verificar si el usuario administra la bodega
-    const [adminResults] = await pool.query(`
+    const [adminResults] = await pool2.query(`
       SELECT 1
       FROM Administra
       WHERE Usuario_ID = ? AND Bodega_ID = ? AND Tipo = 'Administrador'
@@ -1179,7 +1189,7 @@ app.get("/ventas_producto_espesifico_tiempo", async (req, res) => {
     }
 
     // Obtener ventas históricas del producto
-    const [results] = await pool.query(`
+    const [results] = await pool2.query(`
       SELECT DATE(b.Fecha) AS Date, COALESCE(SUM(c.Cantidad), 0) AS TotalSales
       FROM Producto p
       LEFT JOIN Guarda g ON p.ID = g.Producto_ID
@@ -1208,7 +1218,7 @@ app.get("/ventas_por_bodega_fechas", async (req, res) => {
 
   try {
     // Obtener el userId a partir del correo del usuario
-    const [userResults] = await pool.query(`
+    const [userResults] = await pool2.query(`
       SELECT ID AS Usuario_ID
       FROM Usuario
       WHERE Correo = ?
@@ -1221,7 +1231,7 @@ app.get("/ventas_por_bodega_fechas", async (req, res) => {
     const userId = userResults[0].Usuario_ID;
 
     // Verificar si el usuario administra la bodega
-    const [adminResults] = await pool.query(`
+    const [adminResults] = await pool2.query(`
       SELECT 1
       FROM Administra
       WHERE Usuario_ID = ? AND Bodega_ID = ? AND Tipo = 'Administrador'
@@ -1232,7 +1242,7 @@ app.get("/ventas_por_bodega_fechas", async (req, res) => {
     }
 
     // Obtener la venta de productos por bodega en el rango de fechas
-    const [results] = await pool.query(`
+    const [results] = await pool2.query(`
       SELECT p.Nombre AS ProductName, COALESCE(SUM(COALESCE(c.Cantidad, 0)), 0) AS TotalSales
       FROM Producto p
       INNER JOIN Guarda g ON p.ID = g.Producto_ID AND g.Bodega_ID = ?
